@@ -55,10 +55,9 @@ These instructions will get you a copy of the project up and running on your loc
 
 Contributions are welcome! Please feel free to submit pull requests or open issues to improve the application.
 
-*(Optional: Add specific contribution guidelines if needed)*
 
 ## 📄 License
 
-*(Optional: Specify the license for your project, e.g., MIT License)*
+Licensed under MIT
 
 ---
