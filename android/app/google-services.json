@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "754787359209",
+    "project_id": "bytebazaar-8289b",
+    "storage_bucket": "bytebazaar-8289b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:754787359209:android:01c897e054c888f1401378",
+        "android_client_info": {
+          "package_name": "com.example.bytebazaar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmijakR7fRVXeU2IMDWBPv-oyYtUcd8ac"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
