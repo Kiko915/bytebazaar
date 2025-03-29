@@ -62,5 +62,3 @@ Contributions are welcome! Please feel free to submit pull requests or open issu
 *(Optional: Specify the license for your project, e.g., MIT License)*
 
 ---
-
-*This README provides a basic structure. Feel free to expand it with more details about specific features, architecture, screenshots, or deployment instructions as the project evolves.*
