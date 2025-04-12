@@ -15,7 +15,7 @@ class SplashScreen extends StatelessWidget {
           children: <Widget>[
             // Logo
             Image.asset(
-              'lib/assets/ByteBazaar-Icon-NBG.png',
+              'assets/logos/ByteBazaar-Icon-NBG.png',
               width: 150, // Adjust size as needed
               height: 150,
             ),

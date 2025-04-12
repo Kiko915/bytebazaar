@@ -1,4 +1,4 @@
-import 'package:bytebazaar/screens/splash_screen.dart'; // Import the splash screen
+import 'package:bytebazaar/features/authentication/screens/splash_screen.dart'; // Import the splash screen
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart'; // Import Firebase Core
 import 'firebase_options.dart'; // Import generated options
