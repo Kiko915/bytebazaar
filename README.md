@@ -1,4 +1,4 @@
-<img src="lib/assets/ByteBazaar-Icon-NBG.png" alt="ByteBazaar Logo" width="100"/> 
+<img src="assets/logos/ByteBazaar-Icon-NBG.png" alt="ByteBazaar Logo" width="100"/> 
 
 # ByteBazaar 
 
