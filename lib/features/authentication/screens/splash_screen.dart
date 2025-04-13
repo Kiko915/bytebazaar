@@ -40,6 +40,8 @@ class SplashScreen extends StatelessWidget {
                 color: Colors.white.withOpacity(0.8), // Lighter white for subtitle
               ),
             ),
+            const SizedBox(height: 10), // Spacing before the loading indicator
+            ElevatedButton(onPressed: () { print("clicked"); }, child: const Text("Log In"))
           ],
         ),
       ),
