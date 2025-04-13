@@ -5,7 +5,6 @@ import 'firebase_options.dart'; // Import generated options
 
 
 void main() async { 
-
   // bindings
   WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized
   await Firebase.initializeApp( // Initialize Firebase

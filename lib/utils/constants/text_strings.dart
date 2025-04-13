@@ -21,9 +21,12 @@ class BTexts {
   static const String onBoardingSubTitle2 = "ByteBazaar, in partnership with multiple logistic provider, allows user to receive their desired products as fast as they need it to be.";
   static const String onBoardingSubTitle3 = "ByteBazaar is a leading multi-business platform that enables user to access and enjoy numerous products in their best quality.";
   static const String onBoardingSubTitle4 = "Tap 'Get Started' to join the ByteBazaar community. Discover quality products, enjoy fast delivery, and unlock exclusive deals now!";
+  static const String getStarted = "Get Started";
 
 
   // -- Authentication Forms
+  static const String dontHaveAccount = "Don't have an account?";
+  static const String signUp = "Sign Up";
   static const String firstName = "First Name";
   static const String lastName = "Last Name";
   static const String email = "E-Mail";
@@ -69,4 +72,3 @@ class BTexts {
 
 
 }
-
