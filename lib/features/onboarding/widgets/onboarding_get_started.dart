@@ -4,9 +4,7 @@ import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:bytebazaar/utils/constants/text_strings.dart';
 import 'package:bytebazaar/utils/device/device_utils.dart';
-import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 class OnBoardingGetStarted extends StatelessWidget {
   const OnBoardingGetStarted({
@@ -15,7 +13,6 @@ class OnBoardingGetStarted extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dark = BHelperFunctions.isDarkMode(context);
     final controller = OnboardingController.instance;
 
     return Positioned(

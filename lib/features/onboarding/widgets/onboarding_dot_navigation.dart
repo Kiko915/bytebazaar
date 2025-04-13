@@ -1,8 +1,6 @@
 import 'package:bytebazaar/features/onboarding/controller/onboarding_controller.dart';
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
-import 'package:bytebazaar/utils/device/device_utils.dart';
-import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -14,7 +12,6 @@ class OnBoardingDotNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = OnboardingController.instance;
-    final dark = BHelperFunctions.isDarkMode(context);
 
     return Positioned(
       // Position dots in the center vertically, above the title

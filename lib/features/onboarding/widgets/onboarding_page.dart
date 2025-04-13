@@ -1,6 +1,5 @@
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
-import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 
 class OnBoardingPage extends StatelessWidget {
@@ -18,7 +17,6 @@ class OnBoardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dark = BHelperFunctions.isDarkMode(context);
     // Get screen dimensions directly from context
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
