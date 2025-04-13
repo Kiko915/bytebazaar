@@ -25,6 +25,7 @@ class AccountScreen extends StatelessWidget {
                     Text(
                       'MY ACCOUNT',
                       style: TextStyle(
+                        fontFamily: 'BebasNeue',
                         color: Colors.white,
                         fontSize: 22.0,
                         fontWeight: FontWeight.bold,
@@ -70,6 +71,7 @@ class AccountScreen extends StatelessWidget {
                               Text(
                                 'MARC JUSTIN ALBERTO',
                                 style: TextStyle(
+                                  fontFamily: 'Poppins',
                                   color: Color(0xFF4285F4),
                                   fontSize: 18.0,
                                   fontWeight: FontWeight.bold,
@@ -78,6 +80,7 @@ class AccountScreen extends StatelessWidget {
                               Text(
                                 'User ID: 0123456789',
                                 style: TextStyle(
+                                  fontFamily: 'Poppins',
                                   color: Colors.grey,
                                   fontSize: 14.0,
                                 ),
@@ -106,6 +109,7 @@ class AccountScreen extends StatelessWidget {
                                 child: Text(
                                   'MANAGE MY ACCOUNT',
                                   style: TextStyle(
+                                    fontFamily: 'BebasNeue',
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -135,6 +139,7 @@ class AccountScreen extends StatelessWidget {
                                   child: Text(
                                     '₱500.00',
                                     style: TextStyle(
+                                      fontFamily: 'Poppins',
                                       fontSize: 16.0,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -156,6 +161,7 @@ class AccountScreen extends StatelessWidget {
                                   child: Text(
                                     'CASH IN',
                                     style: TextStyle(
+                                      fontFamily: 'BebasNeue',
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -183,6 +189,7 @@ class AccountScreen extends StatelessWidget {
                             child: Text(
                               '64 EXISTING VOUCHERS',
                               style: TextStyle(
+                                fontFamily: 'BebasNeue',
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -217,6 +224,7 @@ class AccountScreen extends StatelessWidget {
                                     Text(
                                       'SHOP NI MARC',
                                       style: TextStyle(
+                                        fontFamily: 'BebasNeue',
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 16.0,
@@ -287,6 +295,7 @@ class AccountScreen extends StatelessWidget {
             child: Text(
               label,
               style: TextStyle(
+                fontFamily: 'Poppins',
                 color: Colors.blue[800],
                 fontWeight: FontWeight.bold,
               ),
@@ -302,6 +311,7 @@ class AccountScreen extends StatelessWidget {
               child: Text(
                 value,
                 style: TextStyle(
+                  fontFamily: 'Poppins',
                   color: Colors.grey[600],
                 ),
               ),
@@ -331,6 +341,7 @@ class AccountScreen extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
+              fontFamily: 'BebasNeue',
               color: Color(0xFF4285F4),
               fontSize: 16.0,
               fontWeight: FontWeight.bold,
