@@ -1,10 +1,12 @@
 // import 'package:bytebazaar/features/authentication/screens/signup_screen.dart'; // Commented out: Assuming signup screen exists
+import 'package:bytebazaar/features/authentication/screens/signup/signup_screen.dart';
 import 'package:bytebazaar/features/onboarding/controller/onboarding_controller.dart';
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:bytebazaar/utils/constants/text_strings.dart';
 import 'package:bytebazaar/utils/device/device_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart'; // Ensure GetX is imported for navigation
 
 class OnBoardingGetStarted extends StatelessWidget {
   const OnBoardingGetStarted({
@@ -26,8 +28,9 @@ class OnBoardingGetStarted extends StatelessWidget {
           SizedBox(
             width: double.infinity, // Make button full width
             child: ElevatedButton(
-              onPressed: () => controller.getStarted(),
+              onPressed: () => Get.offAll(() => const SignupScreen()), // Navigate to Signup Screen
               style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
                 backgroundColor: BColors.white, // White background
                 foregroundColor: const Color.fromARGB(255, 33, 88, 177), // Black text
                 padding: const EdgeInsets.symmetric(vertical: BSizes.buttonHeight / 3), // Increased vertical padding
@@ -50,10 +53,8 @@ class OnBoardingGetStarted extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   // Navigate to Sign Up Screen
-                  // Ensure SignupScreen exists and is imported
-                  // Get.offAll(() => const SignupScreen()); // Commented out: Replace previous screens
-                  // TODO: Implement navigation to SignupScreen once it's created
-                  print("Navigate to Signup Screen"); // Placeholder action
+                  // Navigate to Sign Up Screen
+                  Get.offAll(() => const SignupScreen()); // Replace previous screens
                 },
                 // Reduce padding/margin for tighter spacing
                 style: TextButton.styleFrom(

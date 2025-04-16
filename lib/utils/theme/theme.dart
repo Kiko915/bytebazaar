@@ -75,18 +75,30 @@ class BTheme {
     // Input Decoration Theme
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: BColors.surface,
+      fillColor: BColors.white, // Explicitly set to white for clarity
+      labelStyle: const TextStyle().copyWith(fontSize: 14, color: BColors.textSecondary), // Modern placeholder style
+      hintStyle: const TextStyle().copyWith(fontSize: 14, color: BColors.textSecondary), // Style for hintText if used
+      errorStyle: const TextStyle().copyWith(fontStyle: FontStyle.normal),
+      floatingLabelStyle: const TextStyle().copyWith(color: BColors.textPrimary.withOpacity(0.8)),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(width: 1, color: BColors.lightGrey), // Default border
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide.none,
+        borderSide: const BorderSide(width: 1, color: BColors.lightGrey), // Subtle border when enabled
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(10),
-        borderSide: BorderSide(color: BColors.primary),
+        borderSide: const BorderSide(width: 1, color: BColors.primary), // Primary color border when focused
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: const BorderSide(width: 1, color: Colors.red),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(10.0),
+        borderSide: const BorderSide(width: 2, color: Colors.orange),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     ),
