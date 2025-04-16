@@ -6,7 +6,6 @@ import 'package:bytebazaar/utils/constants/text_strings.dart';
 import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hugeicons/hugeicons.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -125,7 +124,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                 onPressed: () {},
                                 // Added style for height
                                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-                                child: const Text(BTexts.createAccount),
+                                child: const Text(BTexts.createAccount, style: TextStyle(fontSize: BSizes.fontSizeMd)),
                               ),
                             ),
                             const SizedBox(height: BSizes.spaceBtwItems),

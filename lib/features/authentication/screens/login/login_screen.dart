@@ -1,3 +1,4 @@
+import 'package:bytebazaar/features/authentication/screens/password_configuration/forgot_password_screen.dart'; // Import ForgotPasswordScreen
 import 'package:bytebazaar/features/authentication/screens/signup/signup_screen.dart';
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:bytebazaar/utils/constants/image_strings.dart';
@@ -6,7 +7,6 @@ import 'package:bytebazaar/utils/constants/text_strings.dart';
 import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hugeicons/hugeicons.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -111,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () {},
+                                onPressed: () => Get.to(() => const ForgotPasswordScreen()), // Navigate to ForgotPasswordScreen
                                 child: const Text(BTexts.forgetPassword),
                               ),
                             ),
@@ -121,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: ElevatedButton(
                                 onPressed: () {},
                                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-                                child: const Text(BTexts.signIn),
+                                child: const Text(BTexts.signIn, style: TextStyle(fontSize: BSizes.fontSizeMd),),
                               ),
                             ),
                             const SizedBox(height: BSizes.spaceBtwItems),
