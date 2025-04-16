@@ -7,7 +7,13 @@ class BImages {
 
   // -- Social Logos
   // static const String google = "assets/logos/google-icon.png"; // Add if needed
+  static const String google = "assets/icons/google_icon.png"; // Assuming this is the Google logo
   // static const String facebook = "assets/logos/facebook-icon.png"; // Add if needed
+
+  // -- Authentication Images
+  static const String authBg = "assets/images/auth/auth-bg.png";
+  static const String authWelcome = "assets/images/auth/welcome.png";
+  static const String authTagIcon = "assets/images/auth/Group 119.png"; // Assuming this is the tag icon
 
   // -- OnBoarding Images
   static const String onBoardingLogo = "assets/images/onboarding/bb-onb-logo.png";
