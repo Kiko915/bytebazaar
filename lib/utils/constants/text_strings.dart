@@ -65,6 +65,18 @@ class BTexts {
   static const String yourAccountCreatedTitle = "Your account successfully created!";
   static const String yourAccountCreatedSubTitle = "Welcome to Your Ultimate Shopping Destination: Your Account is Created, Unleash the Joy of Seamless Online Shopping!";
 
+  // -- OTP & Password Reset
+  static const String forgotPasswordTitle = "FORGOT PASSWORD";
+  static const String forgotPasswordSubTitle = "Access your existing account through your email.";
+  static const String otpTitle = "VERIFICATION";
+  static const String otpSubTitle = "ByteBazaar has sent you an OTP to your email address."; // Adjust email part dynamically if needed
+  static const String verify = "VERIFY";
+  static const String resendOtp = "Resend";
+  static const String goBack = "Go Back";
+  static const String setPasswordTitle = "SET PASSWORD";
+  static const String setPasswordSubTitle = "Create a new password for your account.";
+  static const String update = "UPDATE";
+
 
   // -- Product
   static const String popularProducts = "Popular Products";
