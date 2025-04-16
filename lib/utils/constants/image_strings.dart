@@ -17,6 +17,7 @@ class BImages {
   static const String authTagIcon = "assets/images/auth/Group 119.png"; // Assuming this is the tag icon
   static const String otpVerificationIcon = "assets/images/auth/Group 120.png"; // Shield icon for OTP
   static const String passwordKeyIcon = "assets/images/auth/Group 121.png"; // Key icon for password reset
+  static const String signUpHero = "assets/images/auth/sign-up.png"; // Hero image for registration
 
   // -- OnBoarding Images
   static const String onBoardingLogo = "assets/images/onboarding/bb-onb-logo.png";

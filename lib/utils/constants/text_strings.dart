@@ -41,13 +41,28 @@ class BTexts {
   static const String lastName = "Last Name"; // Keep if needed for other parts
   static const String newPassword = "New Password"; // Keep if needed for other parts
   static const String username = "Username"; // Keep if needed for other parts
-  static const String phoneNo = "Phone Number"; // Keep if needed for other parts
-  static const String iAgreeTo = "I agree to"; // Keep if needed for other parts
+  static const String phoneNo = "Contact Number"; // Match UI Image
+  static const String iAgreeTo = "I agree on the"; // Match UI Image
   static const String privacyPolicy = "Privacy Policy"; // Keep if needed for other parts
-  static const String termsOfUse = "Terms of use"; // Keep if needed for other parts
+  static const String termsOfUse = "terms and conditions."; // Match UI Image
   static const String verificationCode = "verificationCode"; // Keep if needed for other parts
   static const String resendEmail = "Resend Email"; // Keep if needed for other parts
   static const String resendEmailIn = "Resend email in"; // Keep if needed for other parts
+  static const String register = "REGISTER"; // Button text
+
+  // -- Registration Form Specific
+  static const String personalDetails = "PERSONAL DETAILS";
+  static const String middleName = "Middle Name";
+  static const String occupation = "Occupation";
+  static const String birthday = "Birthday";
+  static const String contactDetails = "CONTACT DETAILS";
+  static const String address = "ADDRESS";
+  static const String country = "Country";
+  static const String region = "Region";
+  static const String cityProvince = "City/Province";
+  static const String municipality = "Municipality";
+  static const String houseStreetBlock = "House No./Street/Block";
+  static const String zipCode = "Zip Code";
 
 
   // -- Authentication Headings
@@ -55,6 +70,8 @@ class BTexts {
   static const String loginSubTitle = "Enter your account details.";
   static const String signupTitle = "GET STARTED";
   static const String signupSubTitle = "Enter your details.";
+  static const String registrationTitle = "REGISTRATION";
+  static const String registrationSubTitle = "Required for easy transactions.";
   static const String forgetPasswordTitle = "Forget password"; // Keep if needed for other parts
   static const String forgetPasswordSubTitle = "Don’t worry sometimes people can forget too, enter your email and we will send you a password reset link."; // Keep if needed for other parts
   static const String changeYourPasswordTitle = "Password Reset Email Sent"; // Keep if needed for other parts
