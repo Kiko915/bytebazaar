@@ -1,0 +1,2 @@
+C:/Users/Acer/Desktop/bytebazaar/android/app/.cxx/Debug/1w4y3u5m/x86_64/CMakeFiles/edit_cache.dir
+C:/Users/Acer/Desktop/bytebazaar/android/app/.cxx/Debug/1w4y3u5m/x86_64/CMakeFiles/rebuild_cache.dir
