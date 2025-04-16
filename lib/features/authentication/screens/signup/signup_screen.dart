@@ -1,4 +1,5 @@
 import 'package:bytebazaar/features/authentication/screens/login/login_screen.dart'; // Added import
+import 'package:bytebazaar/features/authentication/screens/signup/registration_screen.dart'; // Import RegistrationScreen
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:bytebazaar/utils/constants/image_strings.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
@@ -121,7 +122,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () => Get.to(() => const RegistrationScreen()), // Navigate to RegistrationScreen
                                 // Added style for height
                                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                                 child: const Text(BTexts.createAccount, style: TextStyle(fontSize: BSizes.fontSizeMd)),
