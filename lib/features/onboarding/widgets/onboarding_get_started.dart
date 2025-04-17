@@ -1,6 +1,7 @@
 // import 'package:bytebazaar/features/authentication/screens/signup_screen.dart'; // Commented out: Assuming signup screen exists
 import 'package:bytebazaar/features/authentication/screens/signup/signup_screen.dart';
 import 'package:bytebazaar/features/onboarding/controller/onboarding_controller.dart';
+import 'package:bytebazaar/utils/local_storage/local_storage_utility.dart';
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:bytebazaar/utils/constants/text_strings.dart';
@@ -28,7 +29,12 @@ class OnBoardingGetStarted extends StatelessWidget {
           SizedBox(
             width: double.infinity, // Make button full width
             child: ElevatedButton(
-              onPressed: () => Get.offAll(() => const SignupScreen()), // Navigate to Signup Screen
+              onPressed: () async {
+                // Mark onboarding as completed and then navigate
+                final storage = BLocalStorage();
+                await storage.saveData('isFirstTime', false);
+                Get.offAll(() => const SignupScreen());
+              },
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
                 backgroundColor: BColors.white, // White background
@@ -51,10 +57,11 @@ class OnBoardingGetStarted extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(color: BColors.white.withOpacity(0.8)),
               ),
               TextButton(
-                onPressed: () {
-                  // Navigate to Sign Up Screen
-                  // Navigate to Sign Up Screen
-                  Get.offAll(() => const SignupScreen()); // Replace previous screens
+                onPressed: () async {
+                  // Mark onboarding as completed and then navigate
+                  final storage = BLocalStorage();
+                  await storage.saveData('isFirstTime', false);
+                  Get.offAll(() => const SignupScreen());
                 },
                 // Reduce padding/margin for tighter spacing
                 style: TextButton.styleFrom(
