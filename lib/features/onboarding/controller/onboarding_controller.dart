@@ -24,11 +24,11 @@ class OnboardingController extends GetxController {
   }
 
   /// Update Current Index & jump to next page
-  void nextPage() {
+  Future<void> nextPage() async {
     if (currentPageIndex.value == 3) {
       // Mark onboarding as completed
       final storage = BLocalStorage();
-      storage.saveData('isFirstTime', false);
+      await storage.saveData('isFirstTime', false);
       
       // Navigate to Login Screen
       Get.offAll(() => const LoginScreen());
@@ -53,10 +53,10 @@ class OnboardingController extends GetxController {
   }
 
   /// Handle Get Started button click on the last page
-  void getStarted() {
+  Future<void> getStarted() async {
     // Mark onboarding as completed
     final storage = BLocalStorage();
-    storage.saveData('isFirstTime', false);
+    await storage.saveData('isFirstTime', false);
     
     // Navigate to Login Screen
     Get.offAll(() => const LoginScreen());
