@@ -26,7 +26,7 @@ void main() async {
   final isFirstTime = storage.readData<bool>('isFirstTime') ?? true;
 
   // Determine the initial screen
-  // If it's the first time, show Onboarding, otherwise show the main app with BottomNavBar
+  // If it's the first time, show Onboarding, otherwise show the main login screen
   final Widget initialScreen = isFirstTime ? const OnboardingScreen() : const LoginScreen();
 
   // run main app
