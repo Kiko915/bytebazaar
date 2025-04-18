@@ -117,9 +117,6 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                 ),
               ),
             ),
-            
-            // Bottom Navigation Bar
-            _buildBottomNavigationBar(),
           ],
         ),
       ),
@@ -186,7 +183,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             ),
             child: CircleAvatar(
               radius: 40.0,
-              backgroundImage: NetworkImage('https://via.placeholder.com/80'),
+              backgroundColor: Colors.grey[300], // Placeholder background
+              child: Icon(
+                Icons.person,
+                size: 50.0, // Adjust size as needed
+                color: Colors.grey[600],
+              ),
             ),
           ),
           SizedBox(height: 12.0),
@@ -496,54 +498,6 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildBottomNavigationBar() {
-    return Container(
-      height: 60.0,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 5.0,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildNavItem(Icons.shopping_cart, false),
-          _buildNavItem(Icons.notifications, false),
-          _buildNavItem(Icons.home, false),
-          _buildNavItem(Icons.shopping_bag, false),
-          _buildNavItem(Icons.person, true),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildNavItem(IconData icon, bool isSelected) {
-    return Container(
-      decoration: BoxDecoration(
-        border: isSelected
-            ? Border(
-                top: BorderSide(
-                  color: Color(0xFF4285F4),
-                  width: 3.0,
-                ),
-              )
-            : null,
-      ),
-      child: IconButton(
-        onPressed: () {},
-        icon: Icon(
-          icon,
-          color: isSelected ? Color(0xFF4285F4) : Colors.grey,
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:bytebazaar/features/account/screens/account_screen.dart';
 import 'package:bytebazaar/features/home/screens/home_screen.dart'; // Import the actual HomeScreen
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
@@ -25,7 +26,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     const Scaffold(body: Center(child: Text('Wishlist Screen Placeholder'))),
     const Scaffold(body: Center(child: Text('Cart Screen Placeholder'))),
     const Scaffold(body: Center(child: Text('Chat Screen Placeholder'))),
-    const Scaffold(body: Center(child: Text('Profile Screen Placeholder'))),
+    const AccountScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -46,7 +47,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: isDarkMode ? BColors.dark : BColors.background, // Use background color
+          color: isDarkMode ? BColors.dark : BColors.white, // Use background color
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(BSizes.cardRadiusLg), // Use constant size
             topRight: Radius.circular(BSizes.cardRadiusLg), // Use constant size
@@ -73,7 +74,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
               BottomNavigationBarItem(icon: Icon(Iconsax.heart), label: 'Wishlist'),
               BottomNavigationBarItem(icon: Icon(Iconsax.shopping_bag), label: 'Cart'),
               BottomNavigationBarItem(icon: Icon(Iconsax.message), label: 'Chat'),
-              BottomNavigationBarItem(icon: Icon(Iconsax.user), label: 'Profile'),
+              BottomNavigationBarItem(icon: Icon(Iconsax.user), label: 'Me'),
             ],
             currentIndex: _selectedIndex,
             selectedItemColor: BColors.primary,
