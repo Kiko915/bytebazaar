@@ -109,7 +109,7 @@ class AccountScreen extends StatelessWidget {
                                   ),
                                 ),
                                 child: Text(
-                                  'MANAGE MY ACCOUNT',
+                                  'BECOME A SELLER',
                                   style: TextStyle(
                                     fontFamily: 'BebasNeue',
                                     color: Colors.white,

@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class SellerRegistrationScreen extends StatefulWidget {
+  const SellerRegistrationScreen({super.key});
+
   @override
   _SellerRegistrationScreenState createState() => _SellerRegistrationScreenState();
 }
@@ -150,7 +152,7 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
                           children: [
                             // Seller illustration
                             Image.asset(
-                              'assets/images/seller-registration-flat-character.png',
+                              'assets/images/vectors/seller_registration.svg',
                               height: 120,
                               errorBuilder: (context, error, stackTrace) {
                                 print('Error loading image: $error');
@@ -340,7 +342,7 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
                                 strokeWidth: 1.5,
                                 gap: 4.0,
                                 borderRadius: BorderRadius.circular(8.0),
-                                child: Container(
+                                child: SizedBox(
                                   width: double.infinity,
                                   height: 100,
                                   child: _birCertificateFile != null
@@ -395,7 +397,7 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
                                 strokeWidth: 1.5,
                                 gap: 4.0,
                                 borderRadius: BorderRadius.circular(8.0),
-                                child: Container(
+                                child: SizedBox(
                                   width: double.infinity,
                                   height: 100,
                                   child: _validIdFile != null
@@ -683,13 +685,13 @@ class DashedBorder extends StatelessWidget {
   final BorderRadius borderRadius;
 
   const DashedBorder({
-    Key? key,
+    super.key,
     required this.child,
     this.color = Colors.blue,
     this.strokeWidth = 1.0,
     this.gap = 4.0,
     this.borderRadius = BorderRadius.zero,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

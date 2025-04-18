@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 
 class AccountSettingsScreen extends StatefulWidget {
+  const AccountSettingsScreen({super.key});
+
   @override
   _AccountSettingsScreenState createState() => _AccountSettingsScreenState();
 }
@@ -323,7 +325,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     _darkMode = value;
                   });
                 },
-                activeColor: Color(0xFF4285F4),
+                activeTrackColor: Color(0xFF4285F4),
               ),
             ],
           ),
@@ -446,7 +448,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         children: [
           SizedBox(width: 24.0), // Indentation
           // Load SVG logos from assets
-          Container(
+          SizedBox(
             width: 48,
             height: 30,
             child: logo == 'paypal' 
@@ -467,7 +469,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           CupertinoSwitch(
             value: isConnected,
             onChanged: onToggle,
-            activeColor: Color(0xFF4285F4),
+            activeTrackColor: Color(0xFF4285F4),
           ),
         ],
       ),
@@ -475,7 +477,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
   
   Widget _buildLogoutButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 48.0,
       child: ElevatedButton(

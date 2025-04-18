@@ -34,7 +34,6 @@ class BTheme {
     scaffoldBackgroundColor: BColors.background,
     colorScheme: ColorScheme.light(
       primary: BColors.primary,
-      background: BColors.background,
       surface: BColors.surface,
     ),
 
