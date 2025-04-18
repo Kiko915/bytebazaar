@@ -93,6 +93,7 @@ class OTPScreen extends StatelessWidget {
                       //runs when every textfield is filled
                       onSubmit: (String verificationCode) {
                         // Add logic to verify OTP
+                        print("verificationCode: $verificationCode"); // Debug print
                       }, // end onSubmit
                     ),
                     const SizedBox(height: BSizes.spaceBtwSections), // Corrected: TSizes -> BSizes
