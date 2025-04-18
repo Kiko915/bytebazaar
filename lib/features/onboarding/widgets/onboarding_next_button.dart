@@ -18,7 +18,7 @@ class OnBoardingNextButton extends StatelessWidget {
       right: BSizes.defaultSpace,
       bottom: BDevice.getBottomNavigationBarHeight(),
       child: ElevatedButton(
-        onPressed: () => OnboardingController.instance.nextPage(),
+        onPressed: () async => await OnboardingController.instance.nextPage(),
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(),
           backgroundColor: Colors.transparent,

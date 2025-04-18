@@ -85,12 +85,11 @@ class OTPScreen extends StatelessWidget {
 
                     /// OTP Fields
                     OtpTextField(
-                      numberOfFields: 6,
-                      borderColor: BColors.primary, // Corrected: TColors -> BColors // Use primary color for border
-                      focusedBorderColor: BColors.primary, // Corrected: TColors -> BColors
-                      // styles: otpTextStyles, // Define this if needed
+                      numberOfFields: 5,
+                      borderColor: BColors.primary,
+                      focusedBorderColor: BColors.primary,
                       showFieldAsBox: true,
-                      fieldWidth: 42, // Further reduced width to prevent overflow
+                      fieldWidth: 45,
                       //runs when every textfield is filled
                       onSubmit: (String verificationCode) {
                         // Add logic to verify OTP
