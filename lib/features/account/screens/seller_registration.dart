@@ -555,28 +555,6 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
       ),
     );
   }
-  
-  Widget _buildNavItem(IconData icon, {required bool selected}) {
-    return Container(
-      decoration: BoxDecoration(
-        border: selected
-            ? Border(
-                top: BorderSide(
-                  color: Color(0xFF4285F4),
-                  width: 3.0,
-                ),
-              )
-            : null,
-      ),
-      child: IconButton(
-        onPressed: () {},
-        icon: Icon(
-          icon,
-          color: selected ? Color(0xFF4285F4) : Colors.grey,
-        ),
-      ),
-    );
-  }
 }
 
 class _DashedBorderPainter extends CustomPainter {
