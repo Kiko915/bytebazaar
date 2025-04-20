@@ -255,22 +255,36 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     ),
                   ),
                   Spacer(),
-                  Icon(
-                    isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                    color: Colors.grey,
-                    size: 20.0,
+                  AnimatedRotation(
+                    turns: isExpanded ? 0.5 : 0,
+                    duration: Duration(milliseconds: 200),
+                    child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.grey,
+                      size: 20.0,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
           
-          // Expanded content (only visible when expanded)
-          if (isExpanded && expandedContent != null)
-            Padding(
-              padding: EdgeInsets.only(bottom: 8.0),
-              child: expandedContent,
+          // Animated expanded content
+          ClipRect(
+            child: AnimatedSize(
+              duration: Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: SizedBox(
+                height: isExpanded ? null : 0,
+                child: expandedContent != null
+                  ? Padding(
+                      padding: EdgeInsets.only(bottom: 8.0),
+                      child: expandedContent,
+                    )
+                  : const SizedBox(),
+              ),
             ),
+          ),
         ],
       ),
     );
