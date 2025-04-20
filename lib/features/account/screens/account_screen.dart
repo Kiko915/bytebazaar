@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bytebazaar/features/account/screens/account_settings.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -33,7 +34,16 @@ class AccountScreen extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Icon(Icons.settings, color: Colors.white),
+                      GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AccountSettingsScreen()
+                          ),
+                        );
+                      },
+                      child: Icon(Icons.settings, color: Colors.white),
+                    ),
                   ],
                 ),
               ),
