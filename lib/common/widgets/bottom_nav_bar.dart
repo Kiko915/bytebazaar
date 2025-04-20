@@ -1,5 +1,6 @@
 import 'package:bytebazaar/features/account/screens/account_screen.dart';
 import 'package:bytebazaar/features/home/screens/home_screen.dart'; // Import the actual HomeScreen
+import 'package:bytebazaar/features/wishlist/screens/wishlist_screen.dart'; // Import WishlistScreen
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../utils/constants/colors.dart';
@@ -23,7 +24,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
   // Replace these placeholders with your actual screen widgets when created
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(), // Use the imported HomeScreen
-    const Scaffold(body: Center(child: Text('Wishlist Screen Placeholder'))),
+    const WishlistScreen(), // Use the imported WishlistScreen
     const Scaffold(body: Center(child: Text('Cart Screen Placeholder'))),
     const Scaffold(body: Center(child: Text('Chat Screen Placeholder'))),
     const AccountScreen(),

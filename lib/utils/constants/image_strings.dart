@@ -26,5 +26,8 @@ class BImages {
   static const String onBoardingImage3 = "assets/images/onboarding/onb3.png";
   static const String onBoardingImage4 = "assets/images/onboarding/onb4.png";
 
+  // -- Lottie Animations
+  static const String notFoundAnimation = "assets/lottie/not-found.json";
+
   // Add other image constants as needed for the app
 }
