@@ -102,5 +102,9 @@ class BTexts {
   static const String homeAppbarTitle = "Good day for shopping";
   static const String homeAppbarSubTitle = "Francis Mistica";
 
+  // -- Wishlist
+  static const String wishlistTitle = "MY WISHLIST";
+  static const String wishlistEmpty = "No Wishlist at the Moment.";
+
 
 }
