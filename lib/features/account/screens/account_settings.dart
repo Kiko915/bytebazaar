@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:bytebazaar/features/account/screens/account_management.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -303,7 +303,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         _buildPersonalDetailItem(
           icon: Icons.settings_outlined,
           title: 'Manage account details',
-          onTap: () {},
+          onTap: () {
+            showManageAccountDetailsModal(context);
+          },
         ),
       ],
     );

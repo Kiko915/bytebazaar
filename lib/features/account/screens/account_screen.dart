@@ -2,6 +2,7 @@ import 'package:bytebazaar/features/account/screens/account_settings.dart';
 import 'package:bytebazaar/features/account/screens/seller_registration.dart'; // Added import
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:bytebazaar/features/account/screens/account_settings.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
