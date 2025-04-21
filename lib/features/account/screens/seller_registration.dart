@@ -1,3 +1,4 @@
+import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -119,7 +120,7 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
                     SizedBox(width: 8),
                     Text(
                       'SELLER REGISTRATION',
-                      style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         color: Colors.white,
                       ),
                     ),
@@ -161,7 +162,7 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
                                   width: 120,
                                   decoration: BoxDecoration(
                                     color: Color(0xFFEAF2FF),
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(BSizes.borderRadiusLg),
                                   ),
                                   child: Icon(
                                     Icons.person_outline,
@@ -548,55 +549,8 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
                   ),
                 ),
               ),
-              
-              // Bottom Navigation Bar
-              Container(
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 5,
-                      offset: Offset(0, -2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildNavItem(Icons.shopping_cart, selected: false),
-                    _buildNavItem(Icons.notifications, selected: false),
-                    _buildNavItem(Icons.home, selected: false),
-                    _buildNavItem(Icons.shopping_bag, selected: false),
-                    _buildNavItem(Icons.person, selected: true),
-                  ],
-                ),
-              ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-  
-  Widget _buildNavItem(IconData icon, {required bool selected}) {
-    return Container(
-      decoration: BoxDecoration(
-        border: selected
-            ? Border(
-                top: BorderSide(
-                  color: Color(0xFF4285F4),
-                  width: 3.0,
-                ),
-              )
-            : null,
-      ),
-      child: IconButton(
-        onPressed: () {},
-        icon: Icon(
-          icon,
-          color: selected ? Color(0xFF4285F4) : Colors.grey,
         ),
       ),
     );

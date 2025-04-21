@@ -1,3 +1,4 @@
+import 'package:bytebazaar/common/widgets/bottom_nav_bar.dart'; // Import BottomNavBar
 import 'package:bytebazaar/features/authentication/screens/password_configuration/forgot_password_screen.dart'; // Import ForgotPasswordScreen
 import 'package:bytebazaar/features/authentication/screens/signup/signup_screen.dart';
 import 'package:bytebazaar/utils/constants/colors.dart';
@@ -119,7 +120,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: () {},
+                                // Navigate to BottomNavBar on successful login
+                                onPressed: () => Get.offAll(() => const BottomNavBar()),
                                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                                 child: const Text(BTexts.signIn, style: TextStyle(fontSize: BSizes.fontSizeMd),),
                               ),

@@ -1,3 +1,6 @@
+import 'package:bytebazaar/features/account/screens/account_settings.dart';
+import 'package:bytebazaar/features/account/screens/seller_registration.dart'; // Added import
+import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:bytebazaar/features/account/screens/account_settings.dart';
 
@@ -24,24 +27,27 @@ class AccountScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.arrow_back_ios, color: Colors.white),
-                    Text(
-                      'MY ACCOUNT',
-                      style: TextStyle(
-                        fontFamily: 'BebasNeue',
-                        color: Colors.white,
-                        fontSize: 22.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                      GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const AccountSettingsScreen()
+                    // Removed GestureDetector wrapper for back button functionality
+                    Row(
+                      children: [
+                        // Removed back Icon(Icons.arrow_back_ios, color: Colors.white),
+                        // Removed SizedBox(width: 8.0),
+                        Text( // Keep the title
+                          'MY ACCOUNT',
+                          style: TextStyle(
+                            fontFamily: 'BebasNeue',
+                            color: Colors.white,
+                            fontSize: 22.0,
+                            fontWeight: FontWeight.bold,
                           ),
-                        );
-                      },
+                        ),
+                      ],
+                    ),
+                    GestureDetector( // Keep the settings button
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
+                      ),
                       child: Icon(Icons.settings, color: Colors.white),
                     ),
                   ],
@@ -74,8 +80,12 @@ class AccountScreen extends StatelessWidget {
                               // Profile image
                               CircleAvatar(
                                 radius: 50.0,
-                                backgroundColor: Colors.grey[200],
-                                backgroundImage: NetworkImage('https://via.placeholder.com/100'),
+                                backgroundColor: Colors.grey[300], // Slightly darker background for better icon visibility
+                                child: Icon(
+                                  Icons.person,
+                                  size: 60.0, // Adjust size as needed
+                                  color: Colors.grey[600],
+                                ),
                               ),
                               SizedBox(height: 8.0),
                               
@@ -84,7 +94,7 @@ class AccountScreen extends StatelessWidget {
                                 'MARC JUSTIN ALBERTO',
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
-                                  color: Color(0xFF4285F4),
+                                  color: BColors.primary,
                                   fontSize: 18.0,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -110,9 +120,12 @@ class AccountScreen extends StatelessWidget {
                               
                               // Manage account button
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () => Navigator.push( // Navigate to SellerRegistrationScreen
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const SellerRegistrationScreen()),
+                                ),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFF4285F4),
+                                  backgroundColor: BColors.primary,
                                   minimumSize: Size(double.infinity, 48),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8.0),
@@ -135,6 +148,7 @@ class AccountScreen extends StatelessWidget {
                         
                         // E-Wallet section
                         _buildSectionContainer(
+                          icon: Icons.account_balance_wallet_outlined,
                           title: 'MY E-WALLET',
                           content: Row(
                             children: [
@@ -149,7 +163,7 @@ class AccountScreen extends StatelessWidget {
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    '₱500.00',
+                                    '\u20B1500.00', // Use Unicode escape for Peso sign
                                     style: TextStyle(
                                       fontFamily: 'Poppins',
                                       fontSize: 16.0,
@@ -188,11 +202,12 @@ class AccountScreen extends StatelessWidget {
                         
                         // Vouchers section
                         _buildSectionContainer(
+                          icon: Icons.local_offer_outlined,
                           title: 'MY VOUCHERS',
                           content: ElevatedButton(
                             onPressed: () {},
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF4285F4),
+                              backgroundColor: BColors.primary,
                               minimumSize: Size(double.infinity, 48),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
@@ -213,6 +228,7 @@ class AccountScreen extends StatelessWidget {
                         
                         // Shop section
                         _buildSectionContainer(
+                          icon: Icons.store_outlined,
                           title: 'MY SHOP',
                           content: Container(
                             height: 80,
@@ -223,10 +239,12 @@ class AccountScreen extends StatelessWidget {
                             padding: EdgeInsets.symmetric(horizontal: 16.0),
                             child: Row(
                               children: [
-                                Image.network(
-                                  'https://via.placeholder.com/48',
+                                // Replace network image with an icon or local asset if available
+                                Container( // Placeholder container for the shop image
                                   width: 48,
                                   height: 48,
+                                  color: Colors.grey[300],
+                                  child: Icon(Icons.store, color: Colors.grey[600]),
                                 ),
                                 SizedBox(width: 16.0),
                                 Column(
@@ -263,31 +281,6 @@ class AccountScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
-              ),
-              
-              // Bottom navigation bar
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4.0,
-                      offset: Offset(0, -2),
-                    ),
-                  ],
-                ),
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildNavBarItem(Icons.shopping_cart, isSelected: false),
-                    _buildNavBarItem(Icons.notifications, isSelected: false),
-                    _buildNavBarItem(Icons.home, isSelected: false),
-                    _buildNavBarItem(Icons.grid_view, isSelected: false),
-                    _buildNavBarItem(Icons.person, isSelected: true),
-                  ],
                 ),
               ),
             ],
@@ -334,7 +327,7 @@ class AccountScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionContainer({required String title, required Widget content}) {
+  Widget _buildSectionContainer({IconData? icon, required String title, required Widget content}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -349,33 +342,28 @@ class AccountScreen extends StatelessWidget {
       ),
       padding: EdgeInsets.all(16.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // Align title to the left
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontFamily: 'BebasNeue',
-              color: Color(0xFF4285F4),
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
-            ),
+          Row( // Use Row to place icon and title side-by-side
+            children: [
+              if (icon != null) ...[ // Conditionally display icon
+                Icon(icon, color: BColors.primary, size: 20.0),
+                SizedBox(width: 8.0),
+              ],
+              Text(
+                title,
+                style: TextStyle(
+                  fontFamily: 'BebasNeue',
+                  color: BColors.primary,
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
           SizedBox(height: 16.0),
           content,
         ],
-      ),
-    );
-  }
-
-  Widget _buildNavBarItem(IconData icon, {required bool isSelected}) {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isSelected ? Color(0xFFEAF2FF) : Colors.transparent,
-      ),
-      padding: EdgeInsets.all(8.0),
-      child: Icon(
-        icon,
-        color: isSelected ? Color(0xFF4285F4) : Colors.grey,
       ),
     );
   }
