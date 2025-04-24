@@ -525,10 +525,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             width: 48,
             height: 30,
             child: logo == 'paypal' 
-                ? SvgPicture.asset('assets/images/paypal_logo.svg')
+                ? SvgPicture.asset('assets/images/payment/paypal_logo.svg')
                 : logo == 'stripe' 
-                    ? SvgPicture.asset('assets/images/stripe_logo.svg')
-                    : SvgPicture.asset('assets/images/razorpay_logo.svg'),
+                    ? SvgPicture.asset('assets/images/payment/stripe_logo.svg')
+                    : SvgPicture.asset('assets/images/payment/razorpay_logo.svg'),
           ),
           SizedBox(width: 12.0),
           Text(

@@ -110,19 +110,12 @@ class _ManageAccountDetailsModalState extends State<ManageAccountDetailsModal> {
         children: [
           // Header with close button
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'SETTINGS',
-                style: TextStyle(
-                  color: Color(0xFF4080FF),
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
               IconButton(
-                icon: const Icon(Icons.close, color: Colors.grey),
+                icon: const Icon(Icons.arrow_upward_sharp, color: Colors.grey),
                 onPressed: () => Navigator.of(context).pop(),
+                alignment: Alignment.center,
               ),
             ],
           ),
@@ -132,7 +125,7 @@ class _ManageAccountDetailsModalState extends State<ManageAccountDetailsModal> {
             child: Column(
               children: [
                 Image.asset(
-                  'assets/images/byte_bazaar_logo.png',
+                  'assets/logos/bb_inverted.png',
                   height: 50,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
