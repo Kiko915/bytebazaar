@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ManageAccountDetailsModal extends StatefulWidget {
   const ManageAccountDetailsModal({super.key});
@@ -8,20 +10,8 @@ class ManageAccountDetailsModal extends StatefulWidget {
 }
 
 class _ManageAccountDetailsModalState extends State<ManageAccountDetailsModal> {
-  // Sample user data - would be passed in or fetched from backend in real app
-  final Map<String, String> _userData = {
-    'firstName': 'Marc Justin',
-    'middleName': 'Garcia',
-    'lastName': 'Alberto',
-    'email': 'dev_marc@gmail.com',
-    'phoneNumber': '09123456789',
-    'country': 'Marc Justin',
-    'region': 'Garcia',
-    'city': 'Alberto',
-    'municipality': 'Software Engineer',
-    'address': '11/19/2004',
-    'zipCode': '4009',
-  };
+  // User data fetched from Firestore
+  Map<String, dynamic>? _userData;
 
   // Text editing controllers
   final TextEditingController _firstNameController = TextEditingController();
@@ -42,18 +32,32 @@ class _ManageAccountDetailsModalState extends State<ManageAccountDetailsModal> {
   @override
   void initState() {
     super.initState();
-    // Initialize controllers with user data
-    _firstNameController.text = _userData['firstName'] ?? '';
-    _middleNameController.text = _userData['middleName'] ?? '';
-    _lastNameController.text = _userData['lastName'] ?? '';
-    _emailController.text = _userData['email'] ?? '';
-    _phoneController.text = _userData['phoneNumber'] ?? '';
-    _countryController.text = _userData['country'] ?? '';
-    _regionController.text = _userData['region'] ?? '';
-    _cityController.text = _userData['city'] ?? '';
-    _municipalityController.text = _userData['municipality'] ?? '';
-    _addressController.text = _userData['address'] ?? '';
-    _zipCodeController.text = _userData['zipCode'] ?? '';
+    _fetchAndSetUserData();
+  }
+
+  Future<void> _fetchAndSetUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        _userData = doc.data();
+        _firstNameController.text = _userData?['firstName'] ?? '';
+        _middleNameController.text = _userData?['middleName'] ?? '';
+        _lastNameController.text = _userData?['lastName'] ?? '';
+        _emailController.text = _userData?['email'] ?? '';
+        _phoneController.text = _userData?['phone'] ?? '';
+        _countryController.text = _userData?['country'] ?? '';
+        _regionController.text = _userData?['region'] ?? '';
+        _cityController.text = _userData?['province'] ?? '';
+        _municipalityController.text = _userData?['city'] ?? '';
+        _addressController.text = _userData?['street'] ?? '';
+        _zipCodeController.text = _userData?['zip'] ?? '';
+        setState(() {});
+      }
+    } catch (e) {
+      // Optionally handle error
+    }
   }
 
   @override

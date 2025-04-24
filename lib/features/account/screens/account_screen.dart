@@ -2,10 +2,82 @@ import 'package:bytebazaar/features/account/screens/account_settings.dart';
 import 'package:bytebazaar/features/account/screens/seller_registration.dart'; // Added import
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:bytebazaar/features/account/screens/account_settings.dart';
+import 'package:get/get.dart';
+import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
 
-class AccountScreen extends StatelessWidget {
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
+
+  @override
+  State<AccountScreen> createState() => _AccountScreenState();
+}
+
+class _AccountScreenState extends State<AccountScreen> {
+  User? _firebaseUser;
+  Map<String, dynamic>? _userData;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      _firebaseUser = FirebaseAuth.instance.currentUser;
+      if (_firebaseUser == null) {
+        setState(() {
+          _isLoading = false;
+          _error = 'User not logged in.';
+        });
+        return;
+      }
+      final doc = await FirebaseFirestore.instance.collection('users').doc(_firebaseUser!.uid).get();
+      if (doc.exists) {
+        setState(() {
+          _userData = doc.data();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _error = 'User data not found.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _error = e.toString();
+      });
+    }
+  }
+
+  String _shortUid(String? uid) {
+    if (uid == null || uid.length < 10) return uid ?? '-';
+    return uid.substring(0, 6) + '...' + uid.substring(uid.length - 4);
+  }
+
+  String _formatBirthday(dynamic birthday) {
+    if (birthday == null) return '-';
+    if (birthday is String) return birthday;
+    try {
+      // Firestore Timestamp
+      if (birthday is Timestamp) {
+        final dt = birthday.toDate();
+        return "${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')}/${dt.year}";
+      }
+      // If it's a DateTime
+      if (birthday is DateTime) {
+        return "${birthday.month.toString().padLeft(2, '0')}/${birthday.day.toString().padLeft(2, '0')}/${birthday.year}";
+      }
+    } catch (_) {}
+    return birthday.toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,48 +147,49 @@ class AccountScreen extends StatelessWidget {
                             ],
                           ),
                           padding: EdgeInsets.all(16.0),
-                          child: Column(
-                            children: [
-                              // Profile image
-                              CircleAvatar(
-                                radius: 50.0,
-                                backgroundColor: Colors.grey[300], // Slightly darker background for better icon visibility
-                                child: Icon(
-                                  Icons.person,
-                                  size: 60.0, // Adjust size as needed
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              SizedBox(height: 8.0),
-                              
-                              // Name and User ID
-                              Text(
-                                'MARC JUSTIN ALBERTO',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  color: BColors.primary,
-                                  fontSize: 18.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                'User ID: 0123456789',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  color: Colors.grey,
-                                  fontSize: 14.0,
-                                ),
-                              ),
-                              SizedBox(height: 16.0),
-                              
-                              // User details
-                              _buildUserInfoRow('Email:', 'mjg.alberto2@gmail.com'),
-                              _buildUserInfoRow('Contact No:', '09675137365'),
-                              _buildUserInfoRow('Birthday:', '11/04/2004'),
-                              _buildUserInfoRow('Occupation:', 'Student'),
-                              _buildUserInfoRow('Address:', 'Santa Cruz, Laguna'),
-                              
-                              SizedBox(height: 16.0),
+                          child: _isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : _error != null
+                                  ? Center(child: Text(_error!, style: const TextStyle(color: Colors.red)))
+                                  : Column(
+                                      children: [
+                                        // Profile image
+                                        CircleAvatar(
+                                          radius: 50.0,
+                                          backgroundColor: Colors.grey[300],
+                                          child: Icon(
+                                            Icons.person,
+                                            size: 60.0,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8.0),
+                                        // Name and User ID
+                                        Text(
+                                          _userData?['fullName'] ?? _firebaseUser?.displayName ?? 'No Name',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            color: BColors.primary,
+                                            fontSize: 18.0,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          'User ID: ${_shortUid(_firebaseUser?.uid)}',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            color: Colors.grey,
+                                            fontSize: 14.0,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16.0),
+                                        // User details
+                                        _buildUserInfoRow('Email:', _userData?['email'] ?? _firebaseUser?.email ?? '-'),
+                                        _buildUserInfoRow('Contact No:', _userData?['phone'] ?? '-'),
+                                        _buildUserInfoRow('Birthday:', _formatBirthday(_userData?['birthday'])),
+                                        _buildUserInfoRow('Occupation:', _userData?['occupation'] ?? '-'),
+                                        _buildUserInfoRow('Address:', "${_userData?['street']}, ${_userData?['city']}, ${_userData?['province']}, ${_userData?['country']}"),
+                                        const SizedBox(height: 16.0),
                               
                               // Manage account button
                               ElevatedButton(
@@ -251,15 +324,24 @@ class AccountScreen extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      'SHOP NI MARC',
-                                      style: TextStyle(
-                                        fontFamily: 'BebasNeue',
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16.0,
-                                      ),
-                                    ),
+                                    Obx(() {
+                                      final user = Get.find<AuthController>().firebaseUser.value;
+                                      String username;
+                                      if (user != null) {
+                                        username = user.displayName ?? (user.email?.split('@')[0] ?? 'User');
+                                      } else {
+                                        username = 'User';
+                                      }
+                                      return Text(
+                                        username,
+                                        style: TextStyle(
+                                          fontFamily: 'BebasNeue',
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16.0,
+                                        ),
+                                      );
+                                    }),
                                     Row(
                                       children: List.generate(
                                         5,
