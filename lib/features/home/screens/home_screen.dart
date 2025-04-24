@@ -5,6 +5,8 @@ import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for SystemUiOverlayStyle
 import 'package:iconsax/iconsax.dart';
+import 'package:get/get.dart';
+import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -98,10 +100,19 @@ class HomeScreen extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _buildTimeBasedGreeting(context),
-                      Text(
-                        'John Doe',
-                        style: Theme.of(context).textTheme.headlineSmall!.apply(color: BColors.white),
-                      ),
+                      Obx(() {
+                        final user = Get.find<AuthController>().firebaseUser.value;
+                        String username;
+                        if (user != null) {
+                          username = user.displayName ?? (user.email?.split('@')[0] ?? 'User');
+                        } else {
+                          username = 'User';
+                        }
+                        return Text(
+                          username,
+                          style: Theme.of(context).textTheme.headlineSmall!.apply(color: BColors.white),
+                        );
+                      }),
                     ],
                   ),
                   // Right-aligned notification icon

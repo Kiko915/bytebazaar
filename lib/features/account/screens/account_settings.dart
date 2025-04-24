@@ -6,6 +6,8 @@ import 'package:bytebazaar/features/authentication/controller/auth_controller.da
 import 'package:bytebazaar/common/widgets/b_feedback.dart';
 import 'package:get/get.dart';
 import 'package:bytebazaar/features/authentication/screens/login/login_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -14,8 +16,46 @@ class AccountSettingsScreen extends StatefulWidget {
   _AccountSettingsScreenState createState() => _AccountSettingsScreenState();
 }
 
+
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   bool _darkMode = false;
+
+  User? _firebaseUser;
+  Map<String, dynamic>? _userData;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      _firebaseUser = FirebaseAuth.instance.currentUser;
+      if (_firebaseUser == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+      final doc = await FirebaseFirestore.instance.collection('users').doc(_firebaseUser!.uid).get();
+      if (doc.exists) {
+        setState(() {
+          _userData = doc.data();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
   
   // Track which sections are expanded - all set to false by default
   // Change the value depending on the backend condition
@@ -155,6 +195,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
   
   Widget _buildProfileCard() {
+    // Helper to truncate UID
+    String _shortUid(String? uid) {
+      if (uid == null || uid.length < 10) return uid ?? '-';
+      return uid.substring(0, 6) + '...' + uid.substring(uid.length - 4);
+    }
+    final name = _userData?['fullName'] ?? _firebaseUser?.displayName ?? 'No Name';
+    final uid = _shortUid(_firebaseUser?.uid);
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.0),
@@ -197,7 +244,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           ),
           SizedBox(height: 12.0),
           Text(
-            'MARC JUSTIN ALBERTO',
+            name,
             style: TextStyle(
               color: Color(0xFF4285F4),
               fontSize: 16.0,
@@ -205,7 +252,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             ),
           ),
           Text(
-            'User ID: 0123456789',
+            'User ID: $uid',
             style: TextStyle(
               color: Colors.grey,
               fontSize: 12.0,
@@ -376,12 +423,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
   
   Widget _buildLinkedAccountsContent() {
+    // Use loading or fallback if user data is not ready
+    String paypal = _userData?['paypalAccount'] ?? 'Not linked';
+    String stripe = _userData?['stripeAccount'] ?? 'Not linked';
+    String razorpay = _userData?['razorpayAccount'] ?? 'Not linked';
     return Column(
       children: [
         Divider(height: 1, thickness: 1, color: Colors.grey[200]),
         _buildPaymentAccountItem(
           logo: 'paypal',
-          accountNumber: 'g*****234',
+          accountNumber: paypal,
           isConnected: _isPaypalConnected,
           onToggle: (value) {
             setState(() {
@@ -392,7 +443,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         Divider(height: 1, thickness: 1, color: Colors.grey[200]),
         _buildPaymentAccountItem(
           logo: 'stripe',
-          accountNumber: 'g*****234',
+          accountNumber: stripe,
           isConnected: _isStripeConnected,
           onToggle: (value) {
             setState(() {
@@ -403,7 +454,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         Divider(height: 1, thickness: 1, color: Colors.grey[200]),
         _buildPaymentAccountItem(
           logo: 'razorpay',
-          accountNumber: 'g*****234',
+          accountNumber: razorpay,
           isConnected: _isWiseConnected,
           onToggle: (value) {
             setState(() {

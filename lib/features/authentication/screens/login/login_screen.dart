@@ -40,7 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 24, 72, 150),
-      body: Stack( // Use Stack as the direct body
+      body: Stack(
+        // Use Stack as the direct body
         children: [
           // Background Image Widget as first layer, filling the stack
           Positioned.fill(
@@ -59,7 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Image(
-                  height: BHelperFunctions.screenHeight() * 0.3, // Adjust height as needed
+                  height: BHelperFunctions.screenHeight() *
+                      0.3, // Adjust height as needed
                   image: const AssetImage(BImages.authWelcome),
                 ),
               ],
@@ -68,7 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
           // Positioned Form Container (fills bottom part)
           Positioned(
-            top: BHelperFunctions.screenHeight() * 0.4, // Start below hero image
+            top:
+                BHelperFunctions.screenHeight() * 0.4, // Start below hero image
             left: 0,
             right: 0,
             bottom: 0, // Extend to bottom
@@ -93,15 +96,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       // Tag Icon
                       const Image(
-                        height: 150, // Adjust size as needed (Note: was 150 in previous error state, reverting to 100)
+                        height:
+                            150, // Adjust size as needed (Note: was 150 in previous error state, reverting to 100)
                         image: AssetImage(BImages.authTagIcon),
                       ),
                       const SizedBox(height: BSizes.spaceBtwItems),
 
                       // Title & Subtitle
-                      Text(BTexts.loginTitle, style: Theme.of(context).textTheme.headlineMedium),
+                      Text(BTexts.loginTitle,
+                          style: Theme.of(context).textTheme.headlineMedium),
                       const SizedBox(height: BSizes.sm / 2),
-                      Text(BTexts.loginSubTitle, style: Theme.of(context).textTheme.bodyMedium),
+                      Text(BTexts.loginSubTitle,
+                          style: Theme.of(context).textTheme.bodyMedium),
                       const SizedBox(height: BSizes.spaceBtwSections),
 
                       // --- Login Form ---
@@ -112,8 +118,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextFormField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
-                              decoration: const InputDecoration(labelText: BTexts.email),
-                              validator: (value) => value == null || value.isEmpty ? 'Email required' : null,
+                              decoration: const InputDecoration(
+                                  labelText: BTexts.email),
+                              validator: (value) =>
+                                  value == null || value.isEmpty
+                                      ? 'Email required'
+                                      : null,
                             ),
                             const SizedBox(height: BSizes.spaceBtwInputFields),
                             TextFormField(
@@ -122,63 +132,109 @@ class _LoginScreenState extends State<LoginScreen> {
                               decoration: InputDecoration(
                                 labelText: BTexts.password,
                                 suffixIcon: IconButton(
-                                  onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                                  icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility),
+                                  onPressed: () => setState(() =>
+                                      _isPasswordVisible = !_isPasswordVisible),
+                                  icon: Icon(_isPasswordVisible
+                                      ? Icons.visibility_off
+                                      : Icons.visibility),
                                 ),
                               ),
-                              validator: (value) => value == null || value.isEmpty ? 'Password required' : null,
+                              validator: (value) =>
+                                  value == null || value.isEmpty
+                                      ? 'Password required'
+                                      : null,
                             ),
-                            const SizedBox(height: BSizes.spaceBtwInputFields / 2),
+                            const SizedBox(
+                                height: BSizes.spaceBtwInputFields / 2),
                             // Forget Password
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () => Get.to(() => const ForgotPasswordScreen()), // Navigate to ForgotPasswordScreen
+                                onPressed: () => Get.to(() =>
+                                    const ForgotPasswordScreen()), // Navigate to ForgotPasswordScreen
                                 child: const Text(BTexts.forgetPassword),
                               ),
                             ),
                             const SizedBox(height: BSizes.spaceBtwSections),
                             Obx(() => SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: _authController.isLoading.value
-                                    ? null
-                                    : () async {
-                                        if (_formKey.currentState!.validate()) {
-                                          final error = await _authController.signIn(
-                                            email: _emailController.text.trim(),
-                                            password: _passwordController.text.trim(),
-                                          );
-                                          if (error == null) {
-                                             // Personalized welcome back
-                                             final email = _emailController.text.trim();
-                                             final username = email.contains('@') ? email.split('@')[0] : email;
-                                             BFeedback.show(
-                                               context,
-                                               title: 'Welcome back!',
-                                               message: 'Hello, $username! Glad to see you again.',
-                                               type: BFeedbackType.success,
-                                             );
-                                             Get.offAll(() => const BottomNavBar());
-                                           } else {
-                                             BFeedback.show(context, title: 'Login Failed', message: error ?? 'Unknown error', type: BFeedbackType.error);
-                                           }
-                                        }
-                                      },
-                                style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-                                child: _authController.isLoading.value
-                                    ? const CircularProgressIndicator(color: Colors.white)
-                                    : const Text(BTexts.signIn, style: TextStyle(fontSize: BSizes.fontSizeMd)),
-                              ),
-                            )),
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: _authController.isLoading.value
+                                        ? null
+                                        : () async {
+                                            if (_formKey.currentState!
+                                                .validate()) {
+                                              final error =
+                                                  await _authController.signIn(
+                                                email: _emailController.text
+                                                    .trim(),
+                                                password: _passwordController
+                                                    .text
+                                                    .trim(),
+                                              );
+                                              if (error == null) {
+                                                // Personalized welcome back
+                                                final email = _emailController
+                                                    .text
+                                                    .trim();
+                                                final username =
+                                                    email.contains('@')
+                                                        ? email.split('@')[0]
+                                                        : email;
+                                                BFeedback.show(
+                                                  context,
+                                                  title: 'Welcome back!',
+                                                  message:
+                                                      'Hello, $username! Glad to see you again.',
+                                                  type: BFeedbackType.success,
+                                                );
+                                                Get.offAll(
+                                                    () => const BottomNavBar());
+                                              } else {
+                                                BFeedback.show(context,
+                                                    title: 'Login Failed',
+                                                    message: error ??
+                                                        'Unknown error',
+                                                    type: BFeedbackType.error);
+                                              }
+                                            }
+                                          },
+                                    style: ElevatedButton.styleFrom(
+                                        minimumSize:
+                                            const Size(double.infinity, 50)),
+                                    child: _authController.isLoading.value
+                                        ? const CircularProgressIndicator(
+                                            color: Colors.white)
+                                        : const Text(BTexts.signIn,
+                                            style: TextStyle(
+                                                fontSize: BSizes.fontSizeMd)),
+                                  ),
+                                )),
                             const SizedBox(height: BSizes.spaceBtwItems),
                             // Divider
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Flexible(child: Divider(color: dark ? BColors.darkGrey : BColors.grey, thickness: 0.5, indent: 60, endIndent: 5)),
-                                Text(BTexts.orContinueWith, style: Theme.of(context).textTheme.labelMedium),
-                                Flexible(child: Divider(color: dark ? BColors.darkGrey : BColors.grey, thickness: 0.5, indent: 5, endIndent: 60)),
+                                Flexible(
+                                    child: Divider(
+                                        color: dark
+                                            ? BColors.darkGrey
+                                            : BColors.grey,
+                                        thickness: 0.5,
+                                        indent: 60,
+                                        endIndent: 5)),
+                                Text(BTexts.orContinueWith,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .labelMedium),
+                                Flexible(
+                                    child: Divider(
+                                        color: dark
+                                            ? BColors.darkGrey
+                                            : BColors.grey,
+                                        thickness: 0.5,
+                                        indent: 5,
+                                        endIndent: 60)),
                               ],
                             ),
                             const SizedBox(height: BSizes.spaceBtwItems),
@@ -187,55 +243,74 @@ class _LoginScreenState extends State<LoginScreen> {
                               width: double.infinity,
                               child: OutlinedButton(
                                 onPressed: _authController.isLoading.value
-  ? null
-  : () async {
-      final error = await _authController.signInWithGoogle();
-      if (error == null) {
-        final user = _authController.firebaseUser.value;
-        final email = user?.email ?? '';
-        final displayName = user?.displayName;
-        // Check Firestore for existing user profile
-        if (user != null) {
-          final uid = user.uid;
-          final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-          if (!doc.exists) {
-            // New user, redirect to registration
-            Get.to(() => RegistrationScreen(email: email, displayName: displayName));
-            return;
-          }
-        }
-        // Existing user, proceed as before
-        String username = '';
-        if (user != null) {
-          username = user.displayName ?? (user.email?.split('@')[0] ?? 'User');
-        } else {
-          username = 'User';
-        }
-        BFeedback.show(
-          context,
-          title: 'Welcome back!',
-          message: 'Hello, $username! Glad to see you again.',
-          type: BFeedbackType.success,
-        );
-        Get.offAll(() => const BottomNavBar());
-      } else {
-        BFeedback.show(context, title: 'Google Sign-In Failed', message: error ?? 'Unknown error', type: BFeedbackType.error);
-      }
-    },
-                                style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-                                child: Obx(() => _authController.isLoading.value
-                                    ? const CircularProgressIndicator()
-                                    : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Image.asset(
-                                            BImages.google,
-                                            width: 24,
-                                            height: 24,
-                                            fit: BoxFit.contain,
-                                          ),
-                                        ],
-                                      ),
+                                    ? null
+                                    : () async {
+                                        final error = await _authController
+                                            .signInWithGoogle();
+                                        if (error == null) {
+                                          final user = _authController
+                                              .firebaseUser.value;
+                                          final email = user?.email ?? '';
+                                          final displayName = user?.displayName;
+                                          // Check Firestore for existing user profile
+                                          if (user != null) {
+                                            final uid = user.uid;
+                                            final doc = await FirebaseFirestore
+                                                .instance
+                                                .collection('users')
+                                                .doc(uid)
+                                                .get();
+                                            if (!doc.exists) {
+                                              // New user, redirect to registration
+                                              Get.to(() => RegistrationScreen(
+                                                  email: email,
+                                                  displayName: displayName));
+                                              return;
+                                            }
+                                          }
+                                          // Existing user, proceed as before
+                                          String username = '';
+                                          if (user != null) {
+                                            username = user.displayName ??
+                                                (user.email?.split('@')[0] ??
+                                                    'User');
+                                          } else {
+                                            username = 'User';
+                                          }
+                                          BFeedback.show(
+                                            context,
+                                            title: 'Welcome back!',
+                                            message:
+                                                'Hello, $username! Glad to see you again.',
+                                            type: BFeedbackType.success,
+                                          );
+                                          Get.offAll(
+                                              () => const BottomNavBar());
+                                        } else {
+                                          BFeedback.show(context,
+                                              title: 'Google Sign-In Failed',
+                                              message: error ?? 'Unknown error',
+                                              type: BFeedbackType.error);
+                                        }
+                                      },
+                                style: OutlinedButton.styleFrom(
+                                    minimumSize:
+                                        const Size(double.infinity, 50)),
+                                child: Obx(
+                                  () => _authController.isLoading.value
+                                      ? const CircularProgressIndicator()
+                                      : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset(
+                                              BImages.google,
+                                              width: 24,
+                                              height: 24,
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ],
+                                        ),
                                 ),
                               ),
                             ),
@@ -244,9 +319,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(BTexts.dontHaveAccount, style: Theme.of(context).textTheme.bodySmall),
+                                Text(BTexts.dontHaveAccount,
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall),
                                 TextButton(
-                                  onPressed: () => Get.to(() => const SignupScreen()),
+                                  onPressed: () =>
+                                      Get.to(() => const SignupScreen()),
                                   child: const Text(BTexts.signUp),
                                 ),
                               ],
