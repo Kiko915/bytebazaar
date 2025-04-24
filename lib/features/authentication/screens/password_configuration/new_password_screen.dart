@@ -6,6 +6,8 @@ import 'package:bytebazaar/utils/constants/text_strings.dart';
 import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Import Get
+import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
+import 'package:bytebazaar/common/widgets/b_feedback.dart';
 import 'package:iconsax/iconsax.dart';
 
 class NewPasswordScreen extends StatefulWidget { // Changed to StatefulWidget
@@ -18,6 +20,17 @@ class NewPasswordScreen extends StatefulWidget { // Changed to StatefulWidget
 class _NewPasswordScreenState extends State<NewPasswordScreen> { // Added State class
   bool _obscurePassword = true; // State for password field
   bool _obscureConfirmPassword = true; // State for confirm password field
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final AuthController _authController = Get.put(AuthController());
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,50 +106,74 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> { // Added State 
                     const SizedBox(height: BSizes.spaceBtwSections),
 
                     /// Password Text Field
-                    TextFormField(
-                      obscureText: _obscurePassword, // Use state variable
-                      decoration: InputDecoration( // Removed const
-                        labelText: BTexts.password,
-                        suffixIcon: IconButton( // Added IconButton
-                          icon: Icon(_obscurePassword ? Iconsax.eye_slash : Iconsax.eye),
-                          onPressed: () {
-                            setState(() {
-                              _obscurePassword = !_obscurePassword; // Toggle state
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: BSizes.spaceBtwInputFields),
-
-                    /// Confirm Password Text Field
-                    TextFormField(
-                      obscureText: _obscureConfirmPassword, // Use state variable
-                      decoration: InputDecoration( // Removed const
-                        labelText: BTexts.confirmPassword,
-                        suffixIcon: IconButton( // Added IconButton
-                          icon: Icon(_obscureConfirmPassword ? Iconsax.eye_slash : Iconsax.eye),
-                          onPressed: () {
-                            setState(() {
-                              _obscureConfirmPassword = !_obscureConfirmPassword; // Toggle state
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: BSizes.spaceBtwSections),
-
-                    /// Update Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Add update password logic
-                        },
-                        child: Text(
-                          BTexts.update,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: BColors.background), // Set text color explicitly
-                        ),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword, // Use state variable
+                            decoration: InputDecoration(
+                              labelText: BTexts.password,
+                              suffixIcon: IconButton(
+                                icon: Icon(_obscurePassword ? Iconsax.eye_slash : Iconsax.eye),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword; // Toggle state
+                                  });
+                                },
+                              ),
+                            ),
+                            validator: (value) => value == null || value.isEmpty ? 'Password required' : null,
+                          ),
+                          const SizedBox(height: BSizes.spaceBtwInputFields),
+                          /// Confirm Password Text Field
+                          TextFormField(
+                            controller: _confirmPasswordController,
+                            obscureText: _obscureConfirmPassword, // Use state variable
+                            decoration: InputDecoration(
+                              labelText: BTexts.confirmPassword,
+                              suffixIcon: IconButton(
+                                icon: Icon(_obscureConfirmPassword ? Iconsax.eye_slash : Iconsax.eye),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscureConfirmPassword = !_obscureConfirmPassword; // Toggle state
+                                  });
+                                },
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return 'Confirm password required';
+                              if (value != _passwordController.text) return 'Passwords do not match';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: BSizes.spaceBtwSections),
+                          /// Update Button
+                          Obx(() => SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: _authController.isLoading.value
+                                      ? null
+                                      : () async {
+                                          if (_formKey.currentState!.validate()) {
+                                            final error = await _authController.updatePassword(_passwordController.text.trim());
+                                            if (error == null) {
+                                              BFeedback.show(context, title: 'Success', message: 'Password updated!', type: BFeedbackType.success);
+                                            } else {
+                                              BFeedback.show(context, title: 'Update Failed', message: error ?? 'Unknown error', type: BFeedbackType.error);
+                                            }
+                                          }
+                                        },
+                                  child: _authController.isLoading.value
+                                      ? const CircularProgressIndicator(color: Colors.white)
+                                      : Text(
+                                          BTexts.update,
+                                          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: BColors.background),
+                                        ),
+                                ),
+                              )),
+                        ],
                       ),
                     ),
                   ],

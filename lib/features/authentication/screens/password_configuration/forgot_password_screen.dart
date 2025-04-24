@@ -1,4 +1,3 @@
-import 'package:bytebazaar/features/authentication/screens/otp/otp_verification_screen.dart'; // Import OTPScreen
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:bytebazaar/utils/constants/image_strings.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
@@ -6,9 +5,39 @@ import 'package:bytebazaar/utils/constants/text_strings.dart';
 import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Import Get
+import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
+import 'package:bytebazaar/common/widgets/b_feedback.dart';
+import 'package:bytebazaar/features/authentication/screens/password_configuration/password_reset_sent_screen.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  late final TextEditingController _emailController;
+  late final AuthController _authController;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    // Use Get.find if already initialized globally, else put once
+    try {
+      _authController = Get.find<AuthController>();
+    } catch (_) {
+      _authController = Get.put(AuthController());
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,22 +112,54 @@ class ForgotPasswordScreen extends StatelessWidget {
                     const SizedBox(height: BSizes.spaceBtwSections),
 
                     /// Email Text Field
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: BTexts.email,
-                      ),
-                    ),
-                    const SizedBox(height: BSizes.spaceBtwSections),
-
-                    /// Submit Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => Get.to(() => const OTPScreen()), // Navigate to OTPScreen
-                        child: Text(
-                          BTexts.submit,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: BColors.background), // Set text color explicitly
-                        ),
+                    Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: const InputDecoration(labelText: BTexts.email),
+                            validator: (value) => value == null || value.isEmpty ? 'Email required' : null,
+                          ),
+                          const SizedBox(height: BSizes.spaceBtwSections),
+                          /// Submit Button
+                          Obx(() => SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: _authController.isLoading.value
+                                      ? null
+                                      : () async {
+                                          if (_formKey.currentState!.validate()) {
+                                            final email = _emailController.text.trim();
+                                            final exists = await _authController.userExistsByEmail(email);
+                                            if (!exists) {
+                                              BFeedback.show(context, title: 'User Not Found', message: 'No account found for this email.', type: BFeedbackType.error);
+                                              return;
+                                            }
+                                            final error = await _authController.sendPasswordResetEmail(email);
+                                            if (error == null) {
+                                              // Show a confirmation screen
+                                              Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                  builder: (_) => PasswordResetSentScreen(),
+                                                  settings: RouteSettings(arguments: email),
+                                                ),
+                                              );
+                                            } else {
+                                              BFeedback.show(context, title: 'Reset Failed', message: error ?? 'Unknown error', type: BFeedbackType.error);
+                                            }
+                                          }
+                                        },
+                                  child: _authController.isLoading.value
+                                      ? const CircularProgressIndicator(color: Colors.white)
+                                      : Text(
+                                          BTexts.submit,
+                                          style: Theme.of(context).textTheme.titleSmall?.copyWith(color: BColors.background),
+                                        ),
+                                ),
+                              )),
+                        ],
                       ),
                     ),
                   ],

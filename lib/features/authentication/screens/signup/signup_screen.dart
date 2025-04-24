@@ -7,6 +7,7 @@ import 'package:bytebazaar/utils/constants/text_strings.dart';
 import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -18,6 +19,19 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  final AuthController _authController = Get.put(AuthController());
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,13 +105,18 @@ class _SignupScreenState extends State<SignupScreen> {
 
                       // --- Signup Form ---
                       Form(
+                        key: _formKey,
                         child: Column(
                           children: [
                             TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
                               decoration: const InputDecoration(labelText: BTexts.email),
+                              validator: (value) => value == null || value.isEmpty ? 'Email required' : null,
                             ),
                             const SizedBox(height: BSizes.spaceBtwInputFields),
                             TextFormField(
+                              controller: _passwordController,
                               obscureText: !_isPasswordVisible,
                               decoration: InputDecoration(
                                 labelText: BTexts.password,
@@ -106,9 +125,11 @@ class _SignupScreenState extends State<SignupScreen> {
                                   icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility),
                                 ),
                               ),
+                              validator: (value) => value == null || value.isEmpty ? 'Password required' : null,
                             ),
                             const SizedBox(height: BSizes.spaceBtwInputFields),
                             TextFormField(
+                              controller: _confirmPasswordController,
                               obscureText: !_isConfirmPasswordVisible,
                               decoration: InputDecoration(
                                 labelText: BTexts.confirmPassword,
@@ -117,17 +138,41 @@ class _SignupScreenState extends State<SignupScreen> {
                                   icon: Icon(_isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility),
                                 ),
                               ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) return 'Confirm password required';
+                                if (value != _passwordController.text) return 'Passwords do not match';
+                                return null;
+                              },
                             ),
                             const SizedBox(height: BSizes.spaceBtwSections),
-                            SizedBox(
+                            Obx(() => SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: () => Get.to(() => const RegistrationScreen()), // Navigate to RegistrationScreen
-                                // Added style for height
+                                onPressed: _authController.isLoading.value
+                                    ? null
+                                    : () async {
+                                        if (_formKey.currentState!.validate()) {
+                                          final error = await _authController.signUp(
+                                            email: _emailController.text.trim(),
+                                            password: _passwordController.text.trim(),
+                                          );
+                                          if (error == null) {
+                                            // Go to registration screen, pass email
+                                            Get.to(() => RegistrationScreen(
+                                              email: _emailController.text.trim(),
+                                              displayName: null,
+                                            ));
+                                          } else {
+                                            Get.snackbar('Signup Failed', error, snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red.withOpacity(0.7), colorText: Colors.white);
+                                          }
+                                        }
+                                      },
                                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-                                child: const Text(BTexts.createAccount, style: TextStyle(fontSize: BSizes.fontSizeMd)),
+                                child: _authController.isLoading.value
+                                    ? const CircularProgressIndicator(color: Colors.white)
+                                    : const Text(BTexts.createAccount, style: TextStyle(fontSize: BSizes.fontSizeMd)),
                               ),
-                            ),
+                            )),
                             const SizedBox(height: BSizes.spaceBtwItems),
                             // Divider
                             Row(
@@ -143,8 +188,20 @@ class _SignupScreenState extends State<SignupScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton(
-                                onPressed: () {},
-                                // Added style for height
+                                onPressed: () async {
+                                  final error = await _authController.signInWithGoogle();
+                                  if (error == null) {
+                                    final user = _authController.firebaseUser.value;
+                                    final email = user?.email ?? '';
+                                    final displayName = user?.displayName;
+                                    Get.to(() => RegistrationScreen(
+                                      email: email,
+                                      displayName: displayName,
+                                    ));
+                                  } else {
+                                    Get.snackbar('Google Signup Failed', error ?? 'Unknown error', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red.withOpacity(0.7), colorText: Colors.white);
+                                  }
+                                },
                                 style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,

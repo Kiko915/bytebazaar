@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bytebazaar/features/account/screens/account_management.dart';
+import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
+import 'package:bytebazaar/common/widgets/b_feedback.dart';
+import 'package:get/get.dart';
+import 'package:bytebazaar/features/authentication/screens/login/login_screen.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -499,8 +503,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       width: double.infinity,
       height: 48.0,
       child: ElevatedButton(
-        onPressed: () {
-          // Handle logout
+        onPressed: () async {
+          final error = await AuthController.to.signOut();
+          if (error == null) {
+            BFeedback.show(context, title: 'Logged Out', message: 'You have been logged out.', type: BFeedbackType.success);
+            Get.offAll(() => const LoginScreen());
+          } else {
+            BFeedback.show(context, title: 'Logout Failed', message: error ?? 'Unknown error', type: BFeedbackType.error);
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFF4285F4),
