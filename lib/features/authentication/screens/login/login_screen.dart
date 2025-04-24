@@ -8,6 +8,10 @@ import 'package:bytebazaar/utils/constants/text_strings.dart';
 import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
+import 'package:bytebazaar/common/widgets/b_feedback.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bytebazaar/features/authentication/screens/signup/registration_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +22,17 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final AuthController _authController = Get.put(AuthController());
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,13 +106,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       // --- Login Form ---
                       Form(
+                        key: _formKey,
                         child: Column(
                           children: [
                             TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
                               decoration: const InputDecoration(labelText: BTexts.email),
+                              validator: (value) => value == null || value.isEmpty ? 'Email required' : null,
                             ),
                             const SizedBox(height: BSizes.spaceBtwInputFields),
                             TextFormField(
+                              controller: _passwordController,
                               obscureText: !_isPasswordVisible,
                               decoration: InputDecoration(
                                 labelText: BTexts.password,
@@ -106,6 +126,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility),
                                 ),
                               ),
+                              validator: (value) => value == null || value.isEmpty ? 'Password required' : null,
                             ),
                             const SizedBox(height: BSizes.spaceBtwInputFields / 2),
                             // Forget Password
@@ -117,15 +138,39 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: BSizes.spaceBtwSections),
-                            SizedBox(
+                            Obx(() => SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                // Navigate to BottomNavBar on successful login
-                                onPressed: () => Get.offAll(() => const BottomNavBar()),
+                                onPressed: _authController.isLoading.value
+                                    ? null
+                                    : () async {
+                                        if (_formKey.currentState!.validate()) {
+                                          final error = await _authController.signIn(
+                                            email: _emailController.text.trim(),
+                                            password: _passwordController.text.trim(),
+                                          );
+                                          if (error == null) {
+                                             // Personalized welcome back
+                                             final email = _emailController.text.trim();
+                                             final username = email.contains('@') ? email.split('@')[0] : email;
+                                             BFeedback.show(
+                                               context,
+                                               title: 'Welcome back!',
+                                               message: 'Hello, $username! Glad to see you again.',
+                                               type: BFeedbackType.success,
+                                             );
+                                             Get.offAll(() => const BottomNavBar());
+                                           } else {
+                                             BFeedback.show(context, title: 'Login Failed', message: error ?? 'Unknown error', type: BFeedbackType.error);
+                                           }
+                                        }
+                                      },
                                 style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-                                child: const Text(BTexts.signIn, style: TextStyle(fontSize: BSizes.fontSizeMd),),
+                                child: _authController.isLoading.value
+                                    ? const CircularProgressIndicator(color: Colors.white)
+                                    : const Text(BTexts.signIn, style: TextStyle(fontSize: BSizes.fontSizeMd)),
                               ),
-                            ),
+                            )),
                             const SizedBox(height: BSizes.spaceBtwItems),
                             // Divider
                             Row(
@@ -141,18 +186,56 @@ class _LoginScreenState extends State<LoginScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton(
-                                onPressed: () {},
+                                onPressed: _authController.isLoading.value
+  ? null
+  : () async {
+      final error = await _authController.signInWithGoogle();
+      if (error == null) {
+        final user = _authController.firebaseUser.value;
+        final email = user?.email ?? '';
+        final displayName = user?.displayName;
+        // Check Firestore for existing user profile
+        if (user != null) {
+          final uid = user.uid;
+          final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+          if (!doc.exists) {
+            // New user, redirect to registration
+            Get.to(() => RegistrationScreen(email: email, displayName: displayName));
+            return;
+          }
+        }
+        // Existing user, proceed as before
+        String username = '';
+        if (user != null) {
+          username = user.displayName ?? (user.email?.split('@')[0] ?? 'User');
+        } else {
+          username = 'User';
+        }
+        BFeedback.show(
+          context,
+          title: 'Welcome back!',
+          message: 'Hello, $username! Glad to see you again.',
+          type: BFeedbackType.success,
+        );
+        Get.offAll(() => const BottomNavBar());
+      } else {
+        BFeedback.show(context, title: 'Google Sign-In Failed', message: error ?? 'Unknown error', type: BFeedbackType.error);
+      }
+    },
                                 style: OutlinedButton.styleFrom(minimumSize: const Size(double.infinity, 50)),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(
-                                      BImages.google,
-                                      width: 24,
-                                      height: 24,
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ],
+                                child: Obx(() => _authController.isLoading.value
+                                    ? const CircularProgressIndicator()
+                                    : Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Image.asset(
+                                            BImages.google,
+                                            width: 24,
+                                            height: 24,
+                                            fit: BoxFit.contain,
+                                          ),
+                                        ],
+                                      ),
                                 ),
                               ),
                             ),

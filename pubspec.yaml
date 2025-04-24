@@ -32,6 +32,9 @@ dependencies:
   # State Management
   get: ^4.6.6
   get_storage: ^2.1.1
+  firebase_auth: ^5.5.2
+  google_sign_in: ^6.3.0
+  cloud_firestore: ^5.6.6
 
 dev_dependencies:
   flutter_test:
@@ -57,6 +60,8 @@ flutter:
     - assets/fonts/
     - assets/images/products/
     - assets/lottie/
+    - assets/images/payment/
+    - assets/images/vectors/
 
   fonts:
     - family: BebasNeue
