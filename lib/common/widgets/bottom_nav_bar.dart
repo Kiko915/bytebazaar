@@ -43,8 +43,26 @@ class _BottomNavBarState extends State<BottomNavBar> {
     return Scaffold(
       // Extend body behind the navbar for seamless look with transparency/rounding
       extendBody: true,
-      body: Center(
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 350),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
         child: _widgetOptions.elementAt(_selectedIndex),
+        switchInCurve: Curves.easeIn,
+        switchOutCurve: Curves.easeOut,
+        layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
+          return Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              ...previousChildren,
+              if (currentChild != null) currentChild,
+            ],
+          );
+        },
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
