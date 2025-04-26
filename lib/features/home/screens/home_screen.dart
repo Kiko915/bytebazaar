@@ -25,52 +25,57 @@ class HomeScreen extends StatelessWidget {
         body: SafeArea(
           top: false, // Let AnnotatedRegion handle status bar, SafeArea handles bottom
           bottom: true,
-          child: Container( // Added Container for background color
-          color: BColors.light, // Set background color for the safe area content
-          child: SingleChildScrollView(
-            child: Column(
-            children: [
-              // --- Header Section with Custom Curve ---
-            _buildHeaderSection(context),
+          child: Container(
+            color: BColors.light, // Set background color for the safe area content
+            child: CustomScrollView(
+              slivers: [
+                // --- Header Section with Custom Curve ---
+                SliverToBoxAdapter(child: _buildHeaderSection(context)),
 
-            // --- Body Section ---
-            Padding(
-              padding: const EdgeInsets.all(BSizes.defaultSpace),
-              child: Column(
-                children: [
-                  // -- Promo Banner --
-                  _buildPromoBanner(),
-                  const SizedBox(height: BSizes.spaceBtwSections),
-
-                  // -- Categories --
-                  _buildCategoriesSection(context),
-                  const SizedBox(height: BSizes.spaceBtwSections),
-
-                  // -- Recommended Products --
-                  _buildRecommendedSection(context),
-                  const SizedBox(height: BSizes.spaceBtwItems / 8),
-
-                  // -- Product Grid --
-                  GridView.builder(
-                    itemCount: 4, // Example count
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: BSizes.gridViewSpacing,
-                      crossAxisSpacing: BSizes.gridViewSpacing,
-                      childAspectRatio: 0.7,
+                // --- Sticky Search Bar & Filter ---
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _StickySearchFilterDelegate(
+                    child: _StickySearchFilterRow(
+                      searchBar: _buildSearchBar(context),
+                      filterButton: _buildFilterButton(context),
                     ),
-                    itemBuilder: (context, index) => const BProductCardVertical(),
                   ),
-                ],
-              ),
+                ),
+
+                // --- Body Section ---
+                SliverPadding(
+                  padding: const EdgeInsets.all(BSizes.defaultSpace),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _buildPromoBanner(),
+                      const SizedBox(height: BSizes.spaceBtwSections),
+                      _buildCategoriesSection(context),
+                      const SizedBox(height: BSizes.spaceBtwSections),
+                      _buildRecommendedSection(context),
+                      const SizedBox(height: BSizes.spaceBtwItems / 8),
+                      // Product Grid
+                      GridView.builder(
+                        itemCount: 4, // Example count
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: BSizes.gridViewSpacing,
+                          crossAxisSpacing: BSizes.gridViewSpacing,
+                          childAspectRatio: 0.7,
+                        ),
+                        itemBuilder: (context, index) => const BProductCardVertical(),
+                      ),
+                    ]),
+                  ),
+                ),
+              ],
             ),
-          ],
           ),
         ),
-      ), // Close Scaffold
-    ))); // Close AnnotatedRegion
+      ),
+    );
   }
 
   // --- Helper Widgets ---
@@ -127,19 +132,6 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: BSizes.spaceBtwItems),
 
-            // -- Search Bar Row --
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: BSizes.defaultSpace),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _buildSearchBar(context),
-                  ),
-                  const SizedBox(width: BSizes.spaceBtwItems),
-                  _buildFilterButton(context),
-                ],
-              ),
-            ),
             // No extra SizedBox needed here as padding is handled by Container
           ],
         ),
@@ -358,3 +350,48 @@ class HomeScreen extends StatelessWidget {
 
 // Removed _buildProductCardPlaceholder as it's replaced by BProductCardVertical
 } // Add missing closing brace for HomeScreen class
+
+// Sticky search/filter row widget for sliver
+class _StickySearchFilterRow extends StatelessWidget {
+  final Widget searchBar;
+  final Widget filterButton;
+  const _StickySearchFilterRow({required this.searchBar, required this.filterButton});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: BColors.light, // To prevent transparency when pinned
+      padding: const EdgeInsets.only(
+        left: BSizes.defaultSpace,
+        right: BSizes.defaultSpace,
+        top: 16, // Increased top padding to prevent overlap
+        bottom: 8,
+      ),
+      child: Row(
+        children: [
+          Expanded(child: searchBar),
+          const SizedBox(width: BSizes.spaceBtwItems),
+          filterButton,
+        ],
+      ),
+    );
+  }
+}
+
+class _StickySearchFilterDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  _StickySearchFilterDelegate({required this.child});
+
+  @override
+  double get minExtent => 64; // Adjust as needed
+  @override
+  double get maxExtent => 64; // Keep consistent for a fixed sticky bar
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
+}

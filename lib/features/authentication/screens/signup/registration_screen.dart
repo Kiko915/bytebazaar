@@ -3,12 +3,14 @@ import 'package:bytebazaar/utils/constants/image_strings.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:bytebazaar/utils/constants/text_strings.dart';
 import 'package:bytebazaar/utils/helpers/helper_functions.dart';
+import 'package:bytebazaar/utils/csc_api.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; // Import Get for navigation if needed later
 import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bytebazaar/common/widgets/b_feedback.dart';
+import 'package:bytebazaar/utils/address_temp_data.dart';
 
 class RegistrationScreen extends StatefulWidget {
   final String email;
@@ -33,10 +35,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final TextEditingController _phoneController = TextEditingController();
 
   // Address
+  // Address (using country_state_city_picker)
   String? _selectedCountry;
-  final TextEditingController _regionController = TextEditingController();
-  final TextEditingController _provinceController = TextEditingController();
-  final TextEditingController _cityController = TextEditingController();
+  String? _selectedState;
+  String? _selectedCity;
   final TextEditingController _streetController = TextEditingController();
   final TextEditingController _zipController = TextEditingController();
 
@@ -46,12 +48,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   void initState() {
     super.initState();
+    if (!mounted) return;
     _emailController.text = widget.email;
     if (widget.displayName != null) {
       final parts = widget.displayName!.split(' ');
-      if (parts.isNotEmpty) _firstNameController.text = parts.first;
-      if (parts.length > 1)
+      if (parts.isNotEmpty) {
+        _firstNameController.text = parts.first;
+      }
+      if (parts.length > 1) {
         _lastNameController.text = parts.sublist(1).join(' ');
+      }
     }
   }
 
@@ -63,9 +69,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     _middleNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _regionController.dispose();
-    _provinceController.dispose();
-    _cityController.dispose();
     _streetController.dispose();
     _zipController.dispose();
     super.dispose();
@@ -121,7 +124,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           10), // Slightly more rounded corners based on image
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
+                          color: Colors.grey.withAlpha((0.1 * 255).toInt()),
                           spreadRadius: 1,
                           blurRadius: 5,
                           offset: const Offset(0, 2),
@@ -293,63 +296,101 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                       Theme.of(context).textTheme.titleLarge),
                               const SizedBox(
                                   height: BSizes.spaceBtwInputFields),
-                              DropdownButtonFormField<String>(
-                                decoration:
-                                    const InputDecoration(labelText: 'Country'),
-                                items: [
-                                  'Philippines',
-                                  'United States',
-                                  'Canada',
-                                  'Other'
-                                ].map((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value),
-                                  );
-                                }).toList(),
-                                value: _selectedCountry,
-                                onChanged: (value) =>
-                                    setState(() => _selectedCountry = value),
-                                validator: (value) =>
-                                    value == null || value.isEmpty
-                                        ? 'Country required'
-                                        : null,
+                              // Address Fields (Cascading Country/State/City)
+                              // Custom branded dropdown for country/state/city
+                              Theme(
+                                data: Theme.of(context).copyWith(
+                                  inputDecorationTheme: InputDecorationTheme(
+                                    filled: true,
+                                    fillColor: BColors.surfaceLight,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(BSizes.inputFieldRadius),
+                                      borderSide: BorderSide(color: BColors.primary, width: 1.5),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(BSizes.inputFieldRadius),
+                                      borderSide: BorderSide(color: BColors.grey, width: 1),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(BSizes.inputFieldRadius),
+                                      borderSide: BorderSide(color: BColors.primary, width: 2),
+                                    ),
+                                    labelStyle: TextStyle(
+                                      color: BColors.textSecondary,
+                                      fontSize: BSizes.fontSizeMd,
+                                    ),
+                                  ),
+                                  textTheme: Theme.of(context).textTheme.copyWith(
+                                    titleMedium: TextStyle(
+                                      color: BColors.textPrimary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: BSizes.fontSizeMd,
+                                    ),
+                                  ),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      DropdownButtonFormField<String>(
+                                        decoration: const InputDecoration(labelText: 'Country'),
+                                        value: _selectedCountry,
+                                        items: tempCountries.map((c) => DropdownMenuItem<String>(
+                                          value: c['iso2'],
+                                          child: Text(c['name']!),
+                                        )).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _selectedCountry = value;
+                                            _selectedState = null;
+                                            _selectedCity = null;
+                                          });
+                                        },
+                                        validator: (value) => value == null || value.isEmpty ? 'Country required' : null,
+                                      ),
+                                      const SizedBox(height: 12),
+                                      if (_selectedCountry != null)
+                                        DropdownButtonFormField<String>(
+                                          decoration: const InputDecoration(labelText: 'State'),
+                                          value: _selectedState,
+                                          items: tempStates[_selectedCountry]?.map<DropdownMenuItem<String>>((s) =>
+                                            DropdownMenuItem<String>(
+                                              value: s['iso2'],
+                                              child: Text(s['name']!),
+                                            )
+                                          ).toList() ?? [],
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _selectedState = value;
+                                              _selectedCity = null;
+                                            });
+                                          },
+                                          validator: (value) => value == null || value.isEmpty ? 'State required' : null,
+                                        ),
+                                      const SizedBox(height: 12),
+                                      if (_selectedCountry != null && _selectedState != null)
+                                        DropdownButtonFormField<String>(
+                                          decoration: const InputDecoration(labelText: 'City'),
+                                          value: _selectedCity,
+                                          items: tempCities[_selectedCountry]?[_selectedState]?.map<DropdownMenuItem<String>>((city) =>
+                                            DropdownMenuItem<String>(
+                                              value: city,
+                                              child: Text(city),
+                                            )
+                                          )?.toList() ?? [],
+                                          onChanged: (value) {
+                                            setState(() {
+                                              _selectedCity = value;
+                                            });
+                                          },
+                                          validator: (value) => value == null || value.isEmpty ? 'City required' : null,
+                                        ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              const SizedBox(
-                                  height: BSizes.spaceBtwInputFields),
-                              TextFormField(
-                                controller: _regionController,
-                                decoration:
-                                    const InputDecoration(labelText: 'Region'),
-                                validator: (value) =>
-                                    value == null || value.isEmpty
-                                        ? 'Region required'
-                                        : null,
-                              ),
-                              const SizedBox(
-                                  height: BSizes.spaceBtwInputFields),
-                              TextFormField(
-                                controller: _provinceController,
-                                decoration: const InputDecoration(
-                                    labelText: 'Province'),
-                                validator: (value) =>
-                                    value == null || value.isEmpty
-                                        ? 'Province required'
-                                        : null,
-                              ),
-                              const SizedBox(
-                                  height: BSizes.spaceBtwInputFields),
-                              TextFormField(
-                                controller: _cityController,
-                                decoration: const InputDecoration(
-                                    labelText: 'Town/City'),
-                                validator: (value) =>
-                                    value == null || value.isEmpty
-                                        ? 'Town/City required'
-                                        : null,
-                              ),
-                              const SizedBox(
-                                  height: BSizes.spaceBtwInputFields),
+                              const SizedBox(height: BSizes.spaceBtwInputFields),
                               TextFormField(
                                 controller: _streetController,
                                 decoration: const InputDecoration(
@@ -482,13 +523,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                               'phone':
                                                   _phoneController.text.trim(),
                                               'country': _selectedCountry,
-                                              'region':
-                                                  _regionController.text.trim(),
-                                              'province': _provinceController
-                                                  .text
-                                                  .trim(),
-                                              'city':
-                                                  _cityController.text.trim(),
+                                              'province': _selectedState?.trim(),
+                                              'city': _selectedCity?.trim(),
                                               'street':
                                                   _streetController.text.trim(),
                                               'zip': _zipController.text.trim(),

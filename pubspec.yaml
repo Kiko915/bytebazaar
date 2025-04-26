@@ -58,11 +58,11 @@ flutter:
     - assets/images/
     - assets/images/onboarding/
     - assets/images/auth/
-    - assets/fonts/
     - assets/images/products/
     - assets/lottie/
     - assets/images/payment/
     - assets/images/vectors/
+    - assets/fonts/
 
   fonts:
     - family: BebasNeue
