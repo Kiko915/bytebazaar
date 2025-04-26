@@ -81,6 +81,15 @@ class AuthController extends GetxController {
   }) async {
     try {
       isLoading.value = true;
+      // Check for existing sign-in methods
+      final methods = await _auth.fetchSignInMethodsForEmail(email);
+      if (methods.isNotEmpty && !methods.contains('password')) {
+        isLoading.value = false;
+        return 'This email is already registered using a different provider (e.g. Google). Please sign in with Google instead.';
+      } else if (methods.contains('password')) {
+        isLoading.value = false;
+        return 'This email is already registered. Please sign in instead.';
+      }
       await _auth.createUserWithEmailAndPassword(email: email, password: password);
       isLoading.value = false;
       return null;
@@ -105,7 +114,6 @@ class AuthController extends GetxController {
       return e.message;
     }
   }
-
 
   // Forgot Password
   Future<String?> sendPasswordResetEmail(String email) async {
@@ -157,6 +165,12 @@ class AuthController extends GetxController {
         return 'Google sign in aborted';
       }
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final email = googleUser.email;
+      final methods = await _auth.fetchSignInMethodsForEmail(email);
+      if (methods.isNotEmpty && !methods.contains('google.com')) {
+        isLoading.value = false;
+        return 'This email is already registered using a different provider (e.g. Email/Password). Please sign in with email and password instead.';
+      }
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -173,4 +187,3 @@ class AuthController extends GetxController {
     }
   }
 }
-

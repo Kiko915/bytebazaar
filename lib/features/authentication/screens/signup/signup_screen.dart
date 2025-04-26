@@ -21,6 +21,11 @@ class _SignupScreenState extends State<SignupScreen> {
   bool _isConfirmPasswordVisible = false;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  double _passwordStrength = 0.0;
+  String _passwordStrengthLabel = '';
+  Color _passwordStrengthColor = Colors.red;
+
   final TextEditingController _confirmPasswordController = TextEditingController();
   final AuthController _authController = Get.put(AuthController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -33,11 +38,23 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
+  double _calculatePasswordStrength(String password) {
+  if (password.isEmpty) return 0.0;
+  double strength = 0;
+  if (password.length >= 8) strength += 0.3;
+  if (RegExp(r'[A-Z]').hasMatch(password)) strength += 0.2;
+  if (RegExp(r'[a-z]').hasMatch(password)) strength += 0.2;
+  if (RegExp(r'[0-9]').hasMatch(password)) strength += 0.15;
+  if (RegExp(r'[!@#\$&*~_\-]').hasMatch(password)) strength += 0.15;
+  return strength.clamp(0.0, 1.0);
+}
+
   @override
   Widget build(BuildContext context) {
     final dark = BHelperFunctions.isDarkMode(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color.fromARGB(255, 24, 72, 150),
       body: Stack( // Use Stack as the direct body
         children: [
@@ -112,11 +129,35 @@ class _SignupScreenState extends State<SignupScreen> {
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               decoration: const InputDecoration(labelText: BTexts.email),
-                              validator: (value) => value == null || value.isEmpty ? 'Email required' : null,
+                              validator: (value) {
+  if (value == null || value.isEmpty) {
+    return 'Email is required';
+  }
+  final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+');
+  if (!emailRegex.hasMatch(value)) {
+    return 'Please enter a valid email address';
+  }
+  return null;
+},
                             ),
                             const SizedBox(height: BSizes.spaceBtwInputFields),
                             TextFormField(
                               controller: _passwordController,
+                              onChanged: (value) {
+                                setState(() {
+                                  _passwordStrength = _calculatePasswordStrength(value);
+                                  if (_passwordStrength < 0.4) {
+                                    _passwordStrengthLabel = 'Weak';
+                                    _passwordStrengthColor = Colors.red;
+                                  } else if (_passwordStrength < 0.8) {
+                                    _passwordStrengthLabel = 'Medium';
+                                    _passwordStrengthColor = Colors.orange;
+                                  } else {
+                                    _passwordStrengthLabel = 'Strong';
+                                    _passwordStrengthColor = Colors.green;
+                                  }
+                                });
+                              },
                               obscureText: !_isPasswordVisible,
                               decoration: InputDecoration(
                                 labelText: BTexts.password,
@@ -125,9 +166,52 @@ class _SignupScreenState extends State<SignupScreen> {
                                   icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility),
                                 ),
                               ),
-                              validator: (value) => value == null || value.isEmpty ? 'Password required' : null,
+                              validator: (value) {
+  if (value == null || value.isEmpty) {
+    return 'Password is required';
+  }
+  if (value.length < 8) {
+    return 'Password must be at least 8 characters';
+  }
+  if (!RegExp(r'[A-Z]').hasMatch(value)) {
+    return 'Password must contain an uppercase letter';
+  }
+  if (!RegExp(r'[a-z]').hasMatch(value)) {
+    return 'Password must contain a lowercase letter';
+  }
+  if (!RegExp(r'[0-9]').hasMatch(value)) {
+    return 'Password must contain a number';
+  }
+  if (!RegExp(r'[!@#\$&*~_\-]').hasMatch(value)) {
+    return 'Password must contain a special character';
+  }
+  return null;
+},
                             ),
                             const SizedBox(height: BSizes.spaceBtwInputFields),
+                            // Password Strength Bar
+                            if (_passwordController.text.isNotEmpty)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  LinearProgressIndicator(
+                                    borderRadius: BorderRadius.circular(BSizes.cardRadiusLg),
+                                    value: _passwordStrength,
+                                    minHeight: 7,
+                                    backgroundColor: Colors.grey[300],
+                                    valueColor: AlwaysStoppedAnimation<Color>(_passwordStrengthColor),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    _passwordStrengthLabel,
+                                    style: TextStyle(
+                                      color: _passwordStrengthColor,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                              ),
                             TextFormField(
                               controller: _confirmPasswordController,
                               obscureText: !_isConfirmPasswordVisible,
@@ -139,8 +223,27 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ),
                               ),
                               validator: (value) {
-                                if (value == null || value.isEmpty) return 'Confirm password required';
-                                if (value != _passwordController.text) return 'Passwords do not match';
+                                if (value == null || value.isEmpty) {
+                                  return 'Confirm password is required';
+                                }
+                                if (value != _passwordController.text) {
+                                  return 'Passwords do not match';
+                                }
+                                if (value.length < 8) {
+                                  return 'Confirm password must be at least 8 characters';
+                                }
+                                if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                                  return 'Confirm password must contain an uppercase letter';
+                                }
+                                if (!RegExp(r'[a-z]').hasMatch(value)) {
+                                  return 'Confirm password must contain a lowercase letter';
+                                }
+                                if (!RegExp(r'[0-9]').hasMatch(value)) {
+                                  return 'Confirm password must contain a number';
+                                }
+                                if (!RegExp(r'[!@#\$&*~_\-]').hasMatch(value)) {
+                                  return 'Confirm password must contain a special character';
+                                }
                                 return null;
                               },
                             ),

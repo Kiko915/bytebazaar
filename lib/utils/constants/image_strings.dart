@@ -28,6 +28,7 @@ class BImages {
 
   // -- Lottie Animations
   static const String notFoundAnimation = "assets/lottie/not-found.json";
+  static const String noInternetAnimation = "assets/lottie/no-internet.json";
 
   // Add other image constants as needed for the app
 }
