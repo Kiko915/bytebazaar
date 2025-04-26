@@ -13,11 +13,17 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'features/authentication/controller/auth_controller.dart';
+import 'package:flutter/services.dart';
 
 
 void main() async {
   // bindings
   WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized
+
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Init GetStorage
   await GetStorage.init();
