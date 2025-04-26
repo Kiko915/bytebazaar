@@ -39,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final dark = BHelperFunctions.isDarkMode(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color.fromARGB(255, 24, 72, 150),
       body: Stack(
         // Use Stack as the direct body
@@ -83,8 +84,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   topRight: Radius.circular(BSizes.cardRadiusLg * 1.5),
                 ),
               ),
-              // Make content scrollable inside the container
               child: SingleChildScrollView(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.only(
                     top: BSizes.xl,
@@ -120,10 +123,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               keyboardType: TextInputType.emailAddress,
                               decoration: const InputDecoration(
                                   labelText: BTexts.email),
-                              validator: (value) =>
-                                  value == null || value.isEmpty
-                                      ? 'Email required'
-                                      : null,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Email is required';
+                                }
+                                final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+');
+                                if (!emailRegex.hasMatch(value)) {
+                                  return 'Please enter a valid email address';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: BSizes.spaceBtwInputFields),
                             TextFormField(
@@ -139,10 +148,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                       : Icons.visibility),
                                 ),
                               ),
-                              validator: (value) =>
-                                  value == null || value.isEmpty
-                                      ? 'Password required'
-                                      : null,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Password is required';
+                                }
+                                if (value.length < 8) {
+                                  return 'Password must be at least 8 characters';
+                                }
+                                if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                                  return 'Password must contain an uppercase letter';
+                                }
+                                if (!RegExp(r'[a-z]').hasMatch(value)) {
+                                  return 'Password must contain a lowercase letter';
+                                }
+                                if (!RegExp(r'[0-9]').hasMatch(value)) {
+                                  return 'Password must contain a number';
+                                }
+                                if (!RegExp(r'[!@#\$&*~_\-]').hasMatch(value)) {
+                                  return 'Password must contain a special character';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(
                                 height: BSizes.spaceBtwInputFields / 2),
@@ -196,6 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                     message: error ??
                                                         'Unknown error',
                                                     type: BFeedbackType.error);
+                                                print(error);
                                               }
                                             }
                                           },

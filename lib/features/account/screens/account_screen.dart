@@ -4,7 +4,7 @@ import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
-
+import 'package:bytebazaar/features/account/widgets/no_internet_widget.dart'; // Import the widget
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -81,6 +81,12 @@ class _AccountScreenState extends State<AccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Show Lottie animation if Firestore is unavailable (no internet)
+    if (_error != null && _error!.contains('unavailable')) {
+      return const Scaffold(
+        body: NoInternetWidget(),
+      );
+    }
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(

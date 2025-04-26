@@ -120,7 +120,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             decoration: const InputDecoration(labelText: BTexts.email),
-                            validator: (value) => value == null || value.isEmpty ? 'Email required' : null,
+                            validator: (value) {
+  if (value == null || value.isEmpty) {
+    return 'Email is required';
+  }
+  final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+');
+  if (!emailRegex.hasMatch(value)) {
+    return 'Please enter a valid email address';
+  }
+  return null;
+},
                           ),
                           const SizedBox(height: BSizes.spaceBtwSections),
                           /// Submit Button
