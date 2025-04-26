@@ -59,7 +59,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
   String _shortUid(String? uid) {
     if (uid == null || uid.length < 10) return uid ?? '-';
-    return uid.substring(0, 6) + '...' + uid.substring(uid.length - 4);
+    return '${uid.substring(0, 6)}...${uid.substring(uid.length - 4)}';
   }
 
   String _formatBirthday(dynamic birthday) {

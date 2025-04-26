@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:bytebazaar/features/account/screens/account_management.dart';
+import 'package:bytebazaar/features/account/screens/edit_profile.dart';
+import 'package:bytebazaar/features/account/screens/change_password.dart';
 import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
 import 'package:bytebazaar/common/widgets/b_feedback.dart';
 import 'package:get/get.dart';
@@ -196,12 +198,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   
   Widget _buildProfileCard() {
     // Helper to truncate UID
-    String _shortUid(String? uid) {
+    String shortUid(String? uid) {
       if (uid == null || uid.length < 10) return uid ?? '-';
-      return uid.substring(0, 6) + '...' + uid.substring(uid.length - 4);
+      return '${uid.substring(0, 6)}...${uid.substring(uid.length - 4)}';
     }
     final name = _userData?['fullName'] ?? _firebaseUser?.displayName ?? 'No Name';
-    final uid = _shortUid(_firebaseUser?.uid);
+    final uid = shortUid(_firebaseUser?.uid);
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.0),
@@ -348,7 +350,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         _buildPersonalDetailItem(
           icon: Icons.edit_outlined,
           title: 'Edit my profile',
-          onTap: () {},
+          onTap: () {
+            showEditProfileModal(context);
+          },
         ),
         Divider(height: 1, thickness: 1, color: Colors.grey[200]),
         _buildPersonalDetailItem(
@@ -410,7 +414,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         _buildPersonalDetailItem(
           icon: Icons.vpn_key_outlined,
           title: 'Change Password',
-          onTap: () {},
+          onTap: () {
+            showChangePasswordModal(context);
+          },
         ),
         Divider(height: 1, thickness: 1, color: Colors.grey[200]),
         _buildPersonalDetailItem(
@@ -576,6 +582,36 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+      ),
+    );
+  }
+
+  /// Helper function to show the edit profile modal
+  void showEditProfileModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => const EditProfileModal(),
+      ),
+    );
+  }
+
+  /// Helper function to show the change password modal
+  void showChangePasswordModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, controller) => const ChangePasswordModal(),
       ),
     );
   }

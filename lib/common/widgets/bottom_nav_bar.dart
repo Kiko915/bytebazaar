@@ -51,7 +51,6 @@ class _BottomNavBarState extends State<BottomNavBar> {
             child: child,
           );
         },
-        child: _widgetOptions.elementAt(_selectedIndex),
         switchInCurve: Curves.easeIn,
         switchOutCurve: Curves.easeOut,
         layoutBuilder: (Widget? currentChild, List<Widget> previousChildren) {
@@ -63,6 +62,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
             ],
           );
         },
+        child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(

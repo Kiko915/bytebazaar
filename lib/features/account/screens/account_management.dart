@@ -17,6 +17,8 @@ class _ManageAccountDetailsModalState extends State<ManageAccountDetailsModal> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _middleNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _occupationController = TextEditingController();
+  final TextEditingController _birthdayController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _countryController = TextEditingController();
@@ -45,6 +47,8 @@ class _ManageAccountDetailsModalState extends State<ManageAccountDetailsModal> {
         _firstNameController.text = _userData?['firstName'] ?? '';
         _middleNameController.text = _userData?['middleName'] ?? '';
         _lastNameController.text = _userData?['lastName'] ?? '';
+        _occupationController.text = _userData?['occupation'] ?? '';
+        _birthdayController.text = _userData?['birthday'] ?? '';
         _emailController.text = _userData?['email'] ?? '';
         _phoneController.text = _userData?['phone'] ?? '';
         _countryController.text = _userData?['country'] ?? '';
@@ -66,6 +70,8 @@ class _ManageAccountDetailsModalState extends State<ManageAccountDetailsModal> {
     _firstNameController.dispose();
     _middleNameController.dispose();
     _lastNameController.dispose();
+    _occupationController.dispose();
+    _birthdayController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     _countryController.dispose();
@@ -206,6 +212,23 @@ class _ManageAccountDetailsModalState extends State<ManageAccountDetailsModal> {
                     controller: _lastNameController,
                     isEditing: _editingField == 'lastName',
                     onEditPressed: () => _setEditingField('lastName'),
+                  ),
+                  
+                  // Occupation
+                  _buildTextField(
+                    label: 'Occupation',
+                    controller: _occupationController,
+                    isEditing: _editingField == 'occupation',
+                    onEditPressed: () => _setEditingField('occupation'),
+                  ),
+                  const SizedBox(height: 8),
+                  
+                  // Birthday
+                  _buildTextField(
+                    label: 'Birthday (MM/DD/YYYY)',
+                    controller: _birthdayController,
+                    isEditing: _editingField == 'birthday',
+                    onEditPressed: () => _setEditingField('birthday'),
                   ),
                   
                   const SizedBox(height: 16),
