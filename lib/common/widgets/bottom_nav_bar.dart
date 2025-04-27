@@ -1,4 +1,6 @@
 import 'package:bytebazaar/features/account/screens/account_screen.dart';
+import 'package:bytebazaar/features/cart/screens/cart_screen.dart';
+import 'package:bytebazaar/features/chat/screens/chat_screen.dart';
 import 'package:bytebazaar/features/home/screens/home_screen.dart'; // Import the actual HomeScreen
 import 'package:bytebazaar/features/wishlist/screens/wishlist_screen.dart'; // Import WishlistScreen
 import 'package:flutter/material.dart';
@@ -6,9 +8,6 @@ import 'package:iconsax/iconsax.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/sizes.dart'; // Import sizes for padding/height
 import '../../utils/helpers/helper_functions.dart';
-
-// Placeholder Screens should be defined in their respective feature directories
-// Example: lib/features/wishlist/screens/wishlist_screen.dart
 
 class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
@@ -25,8 +24,8 @@ class _BottomNavBarState extends State<BottomNavBar> {
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(), // Use the imported HomeScreen
     const WishlistScreen(), // Use the imported WishlistScreen
-    const Scaffold(body: Center(child: Text('Cart Screen Placeholder'))),
-    const Scaffold(body: Center(child: Text('Chat Screen Placeholder'))),
+    const CartScreen(),
+    const ChatScreen(),
     const AccountScreen(),
   ];
 

@@ -1,5 +1,7 @@
 import 'package:bytebazaar/common/widgets/custom_shapes/curved_edges/curved_edges_clipper.dart'; // Import the clipper
 import 'package:bytebazaar/common/widgets/products/product_cards/product_card_vertical.dart';
+import 'package:bytebazaar/common/widgets/products/product_cards/product_card_minimal.dart';
+import 'package:bytebazaar/common/widgets/products/product_cards/product_card_descriptive.dart';
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
@@ -8,133 +10,182 @@ import 'package:iconsax/iconsax.dart';
 import 'package:get/get.dart';
 import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final FocusNode _searchFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     // Set status bar color to match the header
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: BColors.primary, // Set status bar color to blue
-        statusBarIconBrightness: Brightness.light, // Set icons to light
-        systemNavigationBarColor: BColors.light, // Keep nav bar light
-        systemNavigationBarIconBrightness: Brightness.dark, // Keep nav bar icons dark
-      ),
-      child: Scaffold(
-        body: SafeArea(
-          top: false, // Let AnnotatedRegion handle status bar, SafeArea handles bottom
-          bottom: true,
-          child: Container(
-            color: BColors.light, // Set background color for the safe area content
-            child: CustomScrollView(
-              slivers: [
-                // --- Header Section with Custom Curve ---
-                SliverToBoxAdapter(child: _buildHeaderSection(context)),
+        value: const SystemUiOverlayStyle(
+          statusBarColor: BColors.primary, // Set status bar color to blue
+          statusBarIconBrightness: Brightness.light, // Set icons to light
+          systemNavigationBarColor: BColors.light, // Keep nav bar light
+          systemNavigationBarIconBrightness:
+              Brightness.dark, // Keep nav bar icons dark
+        ),
+        child: Scaffold(
+          body: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              FocusScope.of(context).unfocus();
+            },
+            child: SafeArea(
+              top:
+                  false, // Let AnnotatedRegion handle status bar, SafeArea handles bottom
+              bottom: true,
+              child: Container(
+                color: BColors
+                    .light, // Set background color for the safe area content
+                child: CustomScrollView(
+                  slivers: [
+                    // --- Header Section with Custom Curve ---
+                    SliverToBoxAdapter(child: _buildHeaderSection(context)),
 
-                // --- Sticky Search Bar & Filter ---
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _StickySearchFilterDelegate(
-                    child: _StickySearchFilterRow(
-                      searchBar: _buildSearchBar(context),
-                      filterButton: _buildFilterButton(context),
-                    ),
-                  ),
-                ),
-
-                // --- Body Section ---
-                SliverPadding(
-                  padding: const EdgeInsets.all(BSizes.defaultSpace),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _buildPromoBanner(),
-                      const SizedBox(height: BSizes.spaceBtwSections),
-                      _buildCategoriesSection(context),
-                      const SizedBox(height: BSizes.spaceBtwSections),
-                      _buildRecommendedSection(context),
-                      const SizedBox(height: BSizes.spaceBtwItems / 8),
-                      // Product Grid
-                      GridView.builder(
-                        itemCount: 4, // Example count
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: BSizes.gridViewSpacing,
-                          crossAxisSpacing: BSizes.gridViewSpacing,
-                          childAspectRatio: 0.7,
-                        ),
-                        itemBuilder: (context, index) => const BProductCardVertical(),
+                    // --- Body Section ---
+                    SliverPadding(
+                      padding: const EdgeInsets.all(BSizes.defaultSpace),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          _buildPromoBanner(),
+                          const SizedBox(height: BSizes.spaceBtwSections),
+                          _buildCategoriesSection(context),
+                          const SizedBox(height: BSizes.spaceBtwSections),
+                          _buildRecommendedSection(context),
+                          const SizedBox(height: BSizes.spaceBtwItems / 8),
+    
+                        ]),
                       ),
-                    ]),
-                  ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
   // --- Helper Widgets ---
 
   // Header Section using ClipPath
   Widget _buildHeaderSection(BuildContext context) {
-    return ClipPath(
-      clipper: BHeaderClipper(), // Use the custom clipper
-      child: Container(
-        color: BColors.primary, // Background color
-        padding: const EdgeInsets.only(bottom: BSizes.defaultSpace + 30), // Add padding to account for curve height
-        child: Column(
-          children: [
-            // -- Top Section (Greeting & Notification) --
-            Padding(
-              padding: EdgeInsets.only(
-                left: BSizes.defaultSpace,
-                right: BSizes.defaultSpace,
-                top: kToolbarHeight, // Account for status bar
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Left-aligned greeting column
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildTimeBasedGreeting(context),
-                      Obx(() {
-                        final user = Get.find<AuthController>().firebaseUser.value;
-                        String username;
-                        if (user != null) {
-                          username = user.displayName ?? (user.email?.split('@')[0] ?? 'User');
-                        } else {
-                          username = 'User';
-                        }
-                        return Text(
-                          username,
-                          style: Theme.of(context).textTheme.headlineSmall!.apply(color: BColors.white),
-                        );
-                      }),
-                    ],
-                  ),
-                  // Right-aligned notification icon
-                  _buildAppBarAction(
-                    icon: Iconsax.notification, 
-                    color: BColors.white,
-                    onPressed: () {},
-                    showBadge: true,
-                  ),
+    return Stack(
+      children: [
+        ClipPath(
+          clipper: BHeaderClipper(),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  BColors.primary, // Light blue
+                  Color.fromARGB(255, 17, 56, 128), // Slightly deeper blue
                 ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
-            const SizedBox(height: BSizes.spaceBtwItems),
-
-            // No extra SizedBox needed here as padding is handled by Container
-          ],
+            padding: const EdgeInsets.only(bottom: BSizes.defaultSpace + 50),
+            child: Column(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                    left: BSizes.defaultSpace,
+                    right: BSizes.defaultSpace,
+                    top: kToolbarHeight,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildTimeBasedGreeting(context),
+                          Obx(() {
+                            final user =
+                                Get.find<AuthController>().firebaseUser.value;
+                            String username = user?.displayName ?? 'User';
+                            return Text(
+                              username,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall!
+                                  .apply(color: BColors.white),
+                            );
+                          }),
+                        ],
+                      ),
+                      _buildAppBarAction(
+                        icon: Iconsax.notification,
+                        color: BColors.white,
+                        onPressed: () {},
+                        showBadge: true,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: BSizes.spaceBtwItems + 10),
+                // Search and filter row directly below greeting
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: BSizes.defaultSpace),
+                  child: _buildSearchFilterRow(
+                    context,
+                    elevated: false,
+                    background: Colors.transparent,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
+      ],
+    );
+  }
+
+  Widget _buildSearchFilterRow(BuildContext context,
+      {bool elevated = false, Color? background}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: background ?? Colors.white,
+        borderRadius: BorderRadius.circular(BSizes.cardRadiusLg),
+        boxShadow: elevated
+            ? [
+                BoxShadow(
+                  color: Colors.black.withAlpha((0.07 * 255).toInt()),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : [],
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+      child: Row(
+        children: [
+          // Make search bar take most of the width
+          Expanded(
+            flex: 5,
+            child: _buildSearchBar(context),
+          ),
+          const SizedBox(width: 6),
+          // Make filter button smaller
+          Flexible(
+            flex: 1,
+            child: _buildFilterButton(context),
+          ),
+        ],
       ),
     );
   }
@@ -158,74 +209,115 @@ class HomeScreen extends StatelessWidget {
 
     return Text(
       greeting + emoji,
-      style: Theme.of(context).textTheme.labelMedium!.apply(color: BColors.lightGrey), // Corrected color back to grey
+      style: Theme.of(context)
+          .textTheme
+          .labelMedium!
+          .apply(color: BColors.lightGrey), // Corrected color back to grey
     );
   }
 
   Widget _buildSearchBar(BuildContext context) {
-    // Updated Search Bar Style
-    return Container(
-      width: double.infinity, // Take available width
-      padding: const EdgeInsets.symmetric(horizontal: BSizes.md, vertical: BSizes.sm + 2), // Adjusted padding
-      decoration: BoxDecoration(
-        color: BColors.white,
-        borderRadius: BorderRadius.circular(BSizes.cardRadiusLg), // Standard radius
-        // Removed border to match design
-      ),
-      child: Row(
-        children: [
-          const Icon(Iconsax.search_normal, color: BColors.darkerGrey, size: BSizes.iconMd),
-          const SizedBox(width: BSizes.spaceBtwItems),
-          Text(
-            'Search', // Simplified placeholder text
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: BColors.darkerGrey),
+    return Material(
+      elevation: 1,
+      borderRadius: BorderRadius.circular(30),
+      color: Colors.transparent,
+      child: TextField(
+        focusNode: _searchFocusNode,
+        decoration: InputDecoration(
+          hintText: 'Search products',
+          hintStyle: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.copyWith(color: BColors.darkerGrey.withOpacity(0.7)),
+          prefixIcon: const Icon(Iconsax.search_normal,
+              color: BColors.primary, size: 22),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.close_rounded, color: BColors.lightGrey, size: 20),
+            onPressed: () {
+              // Clear action
+            },
           ),
-        ],
+          filled: true,
+          fillColor: BColors.white,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 18, vertical: 0),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(color: BColors.primary.withOpacity(0.08)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(color: BColors.primary.withOpacity(0.08)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(color: BColors.primary, width: 1.2),
+          ),
+        ),
+        textInputAction: TextInputAction.search,
+        onTap: () {
+          _searchFocusNode.requestFocus();
+        },
+        onSubmitted: (value) {
+          // Handle search submit
+        },
       ),
     );
   }
 
   Widget _buildFilterButton(BuildContext context) {
-    // Filter Button specific widget
-    return Container(
-      decoration: BoxDecoration(
-        color: BColors.white.withOpacity(0.1), // Slightly transparent white background
-        borderRadius: BorderRadius.circular(BSizes.borderRadiusMd),
-      ),
-      child: IconButton(
-        icon: const Icon(Iconsax.setting_4, color: BColors.white, size: BSizes.iconMd),
-        onPressed: () {
+    return Material(
+      color: BColors.primary,
+      shape: const CircleBorder(),
+      elevation: 4,
+      shadowColor: BColors.primary.withAlpha((0.15 * 255).toInt()),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: () {
           // Handle filter action
         },
-        padding: const EdgeInsets.all(BSizes.sm), // Adjust padding as needed
-        constraints: const BoxConstraints(), // Remove constraints
+        child: Padding(
+          padding: const EdgeInsets.all(10), // Smaller, rounder button
+          child: Icon(
+            Iconsax.setting_4,
+            color: Colors.white,
+            size: 22,
+          ),
+        ),
       ),
     );
   }
 
-
-  Widget _buildAppBarAction({required IconData icon, Color? color, VoidCallback? onPressed, bool showBadge = false}) {
+  Widget _buildAppBarAction(
+      {required IconData icon,
+      Color? color,
+      VoidCallback? onPressed,
+      bool showBadge = false}) {
     // Updated to accept color and onPressed
     return Stack(
       alignment: Alignment.center,
       children: [
-          IconButton(
-            icon: Icon(icon, color: color ?? BColors.darkGrey, size: BSizes.iconLg), // Use provided color or default, slightly larger icon
-            onPressed: onPressed, // Use provided onPressed
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-          ),
-          if (showBadge) // Keep badge logic if needed for other icons
-            Positioned(
+        IconButton(
+          icon: Icon(icon,
+              color: color ?? BColors.darkGrey,
+              size: BSizes
+                  .iconLg), // Use provided color or default, slightly larger icon
+          onPressed: onPressed, // Use provided onPressed
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        if (showBadge) // Keep badge logic if needed for other icons
+          Positioned(
             right: 0,
             top: 0,
             child: Container(
               padding: const EdgeInsets.all(BSizes.xs / 2), // Use BSizes
               decoration: BoxDecoration(
-                color: Colors.red, // Use standard red color for the badge
-                shape: BoxShape.circle,
-                border: Border.all(width: 2, color: BColors.white) // Thicker border
-              ),
+                  color: Colors.red, // Use standard red color for the badge
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                      width: 2, color: BColors.white) // Thicker border
+                  ),
               constraints: const BoxConstraints(
                 minWidth: 18, // Slightly larger badge
                 minHeight: 18,
@@ -233,7 +325,8 @@ class HomeScreen extends StatelessWidget {
               child: Center(
                 child: Text(
                   '2', // Example badge count
-                  style: const TextStyle( // Consider defining badge text style in theme
+                  style: const TextStyle(
+                    // Consider defining badge text style in theme
                     color: Colors.white,
                     fontSize: 8, // Make text even smaller for the badge
                     fontWeight: FontWeight.bold,
@@ -250,13 +343,15 @@ class HomeScreen extends StatelessWidget {
   Widget _buildPromoBanner() {
     // Placeholder for the banner - Replace with actual implementation
     return Container(
-      height: 150, // Keep height or make dynamic
+      height: 200, // Keep height or make dynamic
       decoration: BoxDecoration(
         // Use a gradient or image based on the design
         color: Colors.pink.shade100, // Example color
-        borderRadius: BorderRadius.circular(BSizes.borderRadiusLg), // Use BSizes
+        borderRadius:
+            BorderRadius.circular(BSizes.borderRadiusLg), // Use BSizes
       ),
-      child: const Center(child: Text('Promo Banner Placeholder')), // Add actual content
+      child: const Center(
+          child: Text('Promo Banner Placeholder')), // Add actual content
     );
   }
 
@@ -265,28 +360,60 @@ class HomeScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader(context, 'Categories'), // Correctly call _buildSectionHeader here
+        _buildSectionHeader(
+            context, 'Categories'), // Correctly call _buildSectionHeader here
         const SizedBox(height: BSizes.spaceBtwItems), // Use BSizes
         SizedBox(
           height: 85, // Adjust height based on content + padding
-          child: ListView.separated(
-            itemCount: 8, // Example count
-            scrollDirection: Axis.horizontal,
-            separatorBuilder: (_, __) => const SizedBox(width: BSizes.spaceBtwItems), // Use BSizes
-            itemBuilder: (context, index) => _buildCategoryItem(context, index), // Use actual item builder
+          child: Stack(
+            children: [
+              ListView.separated(
+                itemCount: 8, // Example count
+                scrollDirection: Axis.horizontal,
+                separatorBuilder: (_, __) =>
+                    const SizedBox(width: BSizes.spaceBtwItems), // Use BSizes
+                itemBuilder: (context, index) =>
+                    _buildCategoryItem(context, index), // Use actual item builder
+              ),
+              // Right-side gradient overlay
+              Positioned(
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: 36,
+                child: IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          const Color.fromARGB(0, 255, 255, 255),
+                          BColors.light,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, {VoidCallback? onPressed}) { // Ensure this definition is clean
+  Widget _buildSectionHeader(BuildContext context, String title,
+      {VoidCallback? onPressed}) {
+    // Ensure this definition is clean
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineSmall, // Use appropriate style
+          style: Theme.of(context)
+              .textTheme
+              .headlineSmall, // Use appropriate style
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -295,21 +422,33 @@ class HomeScreen extends StatelessWidget {
             onPressed: onPressed,
             child: Text(
               'See more',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: BColors.primary), // Style for see more
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: BColors.primary), // Style for see more
             ), // Add missing closing parenthesis
           ),
       ],
     );
   }
+
   Widget _buildCategoryItem(BuildContext context, int index) {
     // Placeholder icons and text - ideally fetch from data source
     final icons = [
-      Iconsax.watch, Iconsax.bag, Iconsax.magicpen, Iconsax.tag, // Replaced shirt with tag
-      Iconsax.category, Iconsax.category, Iconsax.bezier, Iconsax.menu // Replaced boot with category
+      Iconsax.watch, Iconsax.bag, Iconsax.magicpen,
+      Iconsax.tag, // Replaced shirt with tag
+      Iconsax.category, Iconsax.category, Iconsax.bezier,
+      Iconsax.menu // Replaced boot with category
     ];
     final labels = [
-      'Watches', 'Bags', 'Beauty', 'Clothing',
-      'Accessories', 'Shoes', 'Lifestyle', 'More'
+      'Watches',
+      'Bags',
+      'Beauty',
+      'Clothing',
+      'Accessories',
+      'Shoes',
+      'Lifestyle',
+      'More'
     ];
 
     return Column(
@@ -319,12 +458,13 @@ class HomeScreen extends StatelessWidget {
           height: 56,
           padding: const EdgeInsets.all(BSizes.sm), // Use BSizes
           decoration: BoxDecoration(
-            color: BColors.white,
-            borderRadius: BorderRadius.circular(100), // Circular background
-            border: Border.all(color: BColors.lightGrey.withOpacity(0.5))
-          ),
+              color: BColors.white,
+              borderRadius: BorderRadius.circular(100), // Circular background
+              border: Border.all(
+                  color: BColors.lightGrey.withAlpha((0.5 * 255).toInt()))),
           child: Center(
-            child: Icon(icons[index], color: BColors.primary, size: BSizes.iconLg), // Use BSizes
+            child: Icon(icons[index],
+                color: BColors.primary, size: BSizes.iconLg), // Use BSizes
           ),
         ),
         const SizedBox(height: BSizes.spaceBtwItems / 2), // Use BSizes
@@ -343,55 +483,130 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildRecommendedSection(BuildContext context) {
-    return _buildSectionHeader(context, 'Recommended', onPressed: () {
-      // Handle "See more" action
-    });
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(context, 'Recommended', onPressed: () {
+          // Handle "See more" action
+        }),
+        // Calculate dynamic height for the grid
+        Builder(
+          builder: (context) {
+            final products = [
+              {
+                'title': 'Classic Wrist Watch',
+                'price': 'PHP 1,299',
+                'discountedPrice': '₱1,499',
+                'rating': 4.8,
+                'badge': 'Discount',
+              },
+              {
+                'title': 'Leather Handbag',
+                'price': 'PHP 799',
+                'discountedPrice': '',
+                'rating': 4.6,
+                'badge': 'New',
+              },
+              {
+                'title': 'Modern Table Lamp',
+                'price': 'PHP 2,099',
+                'discountedPrice': '₱2,499',
+                'rating': 4.9,
+                'badge': 'Lowest Price',
+              },
+              {
+                'title': 'Wireless Headphones Marshall',
+                'price': 'PHP 1,599',
+                'discountedPrice': '',
+                'rating': 4.3,
+                'badge': 'Free Shipping',
+              },
+              {
+                'title': 'Eco Water Bottle',
+                'price': 'PHP 999',
+                'discountedPrice': '₱1,099',
+                'rating': 4.7,
+                'badge': 'Discount',
+              },
+            ];
+            int itemCount = products.length;
+            int crossAxisCount = 2;
+            double cardHeight = 220;
+            double mainAxisSpacing = 12;
+            int rowCount = (itemCount / crossAxisCount).ceil();
+            double gridHeight = (cardHeight * rowCount) + (mainAxisSpacing * (rowCount - 1)) + 12; // +12 for top padding
+            final double gridWidth = MediaQuery.of(context).size.width - 2 * BSizes.defaultSpace;
+            final double tileWidth = (gridWidth - (crossAxisCount - 1) * mainAxisSpacing) / crossAxisCount;
+            final double childAspectRatio = tileWidth / cardHeight;
+            return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 12),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: mainAxisSpacing,
+                  crossAxisSpacing: mainAxisSpacing,
+                  childAspectRatio: childAspectRatio,
+                ),
+                itemCount: itemCount,
+                itemBuilder: (context, index) {
+                  final product = products[index % products.length];
+                  return ProductCardMinimal(
+                    imageUrl: 'assets/images/products/sample-product.png',
+                    title: product['title'] as String,
+                    price: product['price'] as String,
+                    discountedPrice: product['discountedPrice'] as String,
+                    rating: product['rating'] as double,
+                    badge: product['badge'] as String,
+                    onWishlist: () {},
+                  );
+                },
+              );
+          },
+        ),
+      ],
+    );
   }
 
 // Removed _buildProductCardPlaceholder as it's replaced by BProductCardVertical
 } // Add missing closing brace for HomeScreen class
 
-// Sticky search/filter row widget for sliver
-class _StickySearchFilterRow extends StatelessWidget {
-  final Widget searchBar;
-  final Widget filterButton;
-  const _StickySearchFilterRow({required this.searchBar, required this.filterButton});
+// Sticky blue search/filter row widget for sliver
+class _StickyBlueSearchFilterDelegate extends SliverPersistentHeaderDelegate {
+  final double _minExtent;
+  final double _maxExtent;
+  final Color backgroundColor;
+  final Widget Function(BuildContext context, bool pinned) builder;
+  _StickyBlueSearchFilterDelegate({
+    required this.builder,
+    required double minExtent,
+    required double maxExtent,
+    required this.backgroundColor,
+  })  : _minExtent = minExtent,
+        _maxExtent = maxExtent;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final bool pinned = shrinkOffset > 0.0;
     return Container(
-      color: BColors.light, // To prevent transparency when pinned
-      padding: const EdgeInsets.only(
-        left: BSizes.defaultSpace,
-        right: BSizes.defaultSpace,
-        top: 16, // Increased top padding to prevent overlap
+      color: pinned ? backgroundColor : Colors.transparent,
+      padding: EdgeInsets.only(
+        top: pinned ? MediaQuery.of(context).padding.top + 8 : 8,
+        left: 0,
+        right: 0,
         bottom: 8,
       ),
-      child: Row(
-        children: [
-          Expanded(child: searchBar),
-          const SizedBox(width: BSizes.spaceBtwItems),
-          filterButton,
-        ],
-      ),
+      child: builder(context, pinned),
     );
   }
-}
-
-class _StickySearchFilterDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  _StickySearchFilterDelegate({required this.child});
 
   @override
-  double get minExtent => 64; // Adjust as needed
+  double get minExtent => _minExtent;
   @override
-  double get maxExtent => 64; // Keep consistent for a fixed sticky bar
+  double get maxExtent => _maxExtent;
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return child;
-  }
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      true;
 }
