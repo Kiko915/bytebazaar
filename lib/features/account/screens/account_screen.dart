@@ -163,11 +163,16 @@ class _AccountScreenState extends State<AccountScreen> {
                                         CircleAvatar(
                                           radius: 50.0,
                                           backgroundColor: Colors.grey[300],
-                                          child: Icon(
-                                            Icons.person,
-                                            size: 60.0,
-                                            color: Colors.grey[600],
-                                          ),
+                                          backgroundImage: _userData?['photoURL'] != null || _firebaseUser?.photoURL != null
+                                              ? NetworkImage(_userData?['photoURL'] ?? _firebaseUser!.photoURL!)
+                                              : null,
+                                          child: _userData?['photoURL'] == null && _firebaseUser?.photoURL == null
+                                              ? Icon(
+                                                  Icons.person,
+                                                  size: 60.0,
+                                                  color: Colors.grey[600],
+                                                )
+                                              : null,
                                         ),
                                         const SizedBox(height: 8.0),
                                         // Name and User ID
