@@ -106,5 +106,12 @@ class BTexts {
   static const String wishlistTitle = "MY WISHLIST";
   static const String wishlistEmpty = "No Wishlist at the Moment.";
 
+  // -- Chat
+  static const String chatTitle = "CHAT";
+  static const String chatEmpty = "No messages yet. Start a conversation!";
+
+  // -- Cart
+  static const String cartTitle = "MY CART";
+  static const String cartEmpty = "No Products in the Cart at the Moment.";
 
 }

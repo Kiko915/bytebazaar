@@ -1,20 +1,15 @@
-
-import 'package:bytebazaar/utils/constants/image_strings.dart';
-import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:bytebazaar/utils/constants/text_strings.dart';
-import 'package:bytebazaar/utils/helpers/helper_functions.dart';
 import 'package:flutter/material.dart';
-
 import 'package:lottie/lottie.dart';
 import 'package:bytebazaar/common/widgets/b_feedback.dart';
+import 'package:bytebazaar/utils/constants/sizes.dart';
 
-class WishlistScreen extends StatelessWidget {
-  const WishlistScreen({super.key});
+class CartScreen extends StatelessWidget {
+  const CartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final dark = BHelperFunctions.isDarkMode(context);
-    // Placeholder for wishlist items logic. Assume empty for now.
+    // Placeholder for cart items logic. Assume empty for now.
     final bool isEmpty = true;
 
     return Scaffold(
@@ -38,7 +33,7 @@ class WishlistScreen extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          BTexts.wishlistTitle,
+                          BTexts.cartTitle,
                           style: const TextStyle(
                             fontFamily: 'BebasNeue',
                             color: Colors.white,
@@ -50,46 +45,40 @@ class WishlistScreen extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: () {
-                        // TODO: Implement remove all wishlist items
+                        // TODO: Implement edit mode logic
                         BFeedback.show(
                           context,
-                          title: 'Wishlist Cleared',
-                          message: 'All wishlist items removed (placeholder).',
+                          title: 'Edit Mode',
+                          message: 'You can now select and edit cart items (placeholder).',
                           type: BFeedbackType.info,
+                          position: BFeedbackPosition.top
                         );
                       },
-                      child: const Icon(Icons.delete_sweep, color: Colors.white),
+                      child: const Icon(Icons.edit, color: Colors.white),
                     ),
                   ],
                 ),
               ),
               Expanded(
-                child: isEmpty
-                    ? Center(
+                child: isEmpty ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Display Lottie animation when wishlist is empty
                             Lottie.asset(
-                              BImages.notFoundAnimation, // Path as positional argument
-                              width: BHelperFunctions.screenWidth() * 0.6, // Re-add width as named argument
+                              'assets/lottie/empty-cart.json',
+                              width: MediaQuery.of(context).size.width * 0.6,
                             ),
                             const SizedBox(height: BSizes.spaceBtwItems),
                             Text(
-                              BTexts.wishlistEmpty,
+                              BTexts.cartEmpty,
                               style: Theme.of(context).textTheme.bodyMedium,
                               textAlign: TextAlign.center,
                             ),
-                            const SizedBox(height: BSizes.spaceBtwSections),
-                            // Optional: Add a button to browse products
-                            // ElevatedButton(
-                            //   onPressed: () { /* Navigate to shop */ },
-                            //   child: const Text(BTexts.browseProducts),
                           ],
                         ),
                       )
                     : const Center(
-                        child: Text("Wishlist Items Here"), // Placeholder for actual list
+                        child: Text("Cart Items Here"), // Placeholder for actual list
                       ),
               ),
             ],
