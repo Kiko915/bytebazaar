@@ -1,5 +1,4 @@
 import 'package:bytebazaar/utils/constants/colors.dart';
-import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:bytebazaar/utils/device/device_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
