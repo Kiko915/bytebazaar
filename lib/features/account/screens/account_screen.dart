@@ -1,10 +1,10 @@
 import 'package:bytebazaar/features/account/screens/account_settings.dart';
-import 'package:bytebazaar/features/account/screens/seller_registration.dart'; // Added import
+import 'package:bytebazaar/features/account/screens/seller_registration.dart';
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
-import 'package:bytebazaar/features/account/widgets/no_internet_widget.dart'; // Import the widget
+import 'package:bytebazaar/features/account/widgets/no_internet_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -89,7 +89,7 @@ class _AccountScreenState extends State<AccountScreen> {
     }
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.center,
@@ -107,7 +107,7 @@ class _AccountScreenState extends State<AccountScreen> {
                   children: [
                     // Removed GestureDetector wrapper for back button functionality
                     Row(
-                      children: [
+                      children: const [
                         // Removed back Icon(Icons.arrow_back_ios, color: Colors.white),
                         // Removed SizedBox(width: 8.0),
                         Text( // Keep the title
@@ -126,7 +126,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         context,
                         MaterialPageRoute(builder: (context) => const AccountSettingsScreen()),
                       ),
-                      child: Icon(Icons.settings, color: Colors.white),
+                      child: const Icon(Icons.settings, color: Colors.white),
                     ),
                   ],
                 ),
@@ -147,12 +147,12 @@ class _AccountScreenState extends State<AccountScreen> {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black12,
-                                offset: Offset(0, 4),
+                                offset: const Offset(0, 4),
                                 blurRadius: 10.0,
                               ),
                             ],
                           ),
-                          padding: EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(16.0),
                           child: _isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : _error != null
@@ -160,36 +160,43 @@ class _AccountScreenState extends State<AccountScreen> {
                                   : Column(
                                       children: [
                                         // Profile image
-                                        CircleAvatar(
-                                          radius: 50.0,
-                                          backgroundColor: Colors.grey[300],
-                                          backgroundImage: _userData?['photoURL'] != null || _firebaseUser?.photoURL != null
-                                              ? NetworkImage(_userData?['photoURL'] ?? _firebaseUser!.photoURL!)
-                                              : null,
-                                          child: _userData?['photoURL'] == null && _firebaseUser?.photoURL == null
-                                              ? Icon(
-                                                  Icons.person,
-                                                  size: 60.0,
-                                                  color: Colors.grey[600],
-                                                )
-                                              : null,
-                                        ),
+                                        Obx(() {
+                                          final user = Get.find<AuthController>().firebaseUser.value;
+                                          final photoUrl = _userData?['photoURL'] ?? user?.photoURL;
+                                          return CircleAvatar(
+                                            radius: 50.0,
+                                            backgroundColor: Colors.grey[300],
+                                            backgroundImage: photoUrl != null && photoUrl.isNotEmpty
+                                                ? NetworkImage(photoUrl)
+                                                : null,
+                                            child: (photoUrl == null || photoUrl.isEmpty)
+                                                ? const Icon(
+                                                    Icons.person,
+                                                    size: 60.0,
+                                                    color: Colors.grey,
+                                                  )
+                                                : null,
+                                          );
+                                        }),
                                         const SizedBox(height: 8.0),
                                         // Name and User ID
-                                        Text(
-                                          Get.find<AuthController>().currentUsername.value.isNotEmpty
-                                            ? Get.find<AuthController>().currentUsername.value
-                                            : (_userData?['fullName'] ?? _firebaseUser?.displayName ?? _firebaseUser?.email ?? 'No Name'),
-                                          style: TextStyle(
-                                            fontFamily: 'Poppins',
-                                            color: BColors.primary,
-                                            fontSize: 18.0,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
+                                        Obx(() {
+                                          final username = Get.find<AuthController>().currentUsername.value;
+                                          return Text(
+                                            username.isNotEmpty
+                                              ? username
+                                              : (_userData?['fullName'] ?? _firebaseUser?.displayName ?? _firebaseUser?.email ?? 'No Name'),
+                                            style: TextStyle(
+                                              fontFamily: 'Poppins',
+                                              color: BColors.primary,
+                                              fontSize: 18.0,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          );
+                                        }),
                                         Text(
                                           'User ID: ${_shortUid(_firebaseUser?.uid)}',
-                                          style: TextStyle(
+                                          style: const TextStyle(
                                             fontFamily: 'Poppins',
                                             color: Colors.grey,
                                             fontSize: 14.0,
@@ -201,36 +208,38 @@ class _AccountScreenState extends State<AccountScreen> {
                                         _buildUserInfoRow('Contact No:', _userData?['phone'] ?? '-'),
                                         _buildUserInfoRow('Birthday:', _formatBirthday(_userData?['birthday'])),
                                         _buildUserInfoRow('Occupation:', _userData?['occupation'] ?? '-'),
-                                        _buildUserInfoRow('Address:', "${_userData?['street']}, ${_userData?['city']}, ${_userData?['province']}, ${_userData?['country']}"),
+                                        _buildUserInfoRow('Address:', 
+                                          "${_userData?['street'] ?? '-'}, ${_userData?['city'] ?? ''}, ${_userData?['province'] ?? ''}, ${_userData?['country'] ?? ''}"),
                                         const SizedBox(height: 16.0),
                               
-                              // Manage account button
-                              ElevatedButton(
-                                onPressed: () => Navigator.push( // Navigate to SellerRegistrationScreen
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const SellerRegistrationScreen()),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: BColors.primary,
-                                  minimumSize: Size(double.infinity, 48),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                  ),
-                                ),
-                                child: Text(
-                                  'BECOME A SELLER',
-                                  style: TextStyle(
-                                    fontFamily: 'BebasNeue',
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                                        const SizedBox(height: 8.0),
+                                        // Manage account button
+                                        ElevatedButton(
+                                          onPressed: () => Navigator.push( // Navigate to SellerRegistrationScreen
+                                            context,
+                                            MaterialPageRoute(builder: (context) => const SellerRegistrationScreen()),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: BColors.primary,
+                                            minimumSize: const Size(double.infinity, 48),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8.0),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'BECOME A SELLER',
+                                            style: TextStyle(
+                                              fontFamily: 'BebasNeue',
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                         ),
                         
-                        SizedBox(height: 16.0),
+                        const SizedBox(height: 16.0),
                         
                         // E-Wallet section
                         _buildSectionContainer(
@@ -248,7 +257,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                     border: Border.all(color: Colors.grey[300]!),
                                   ),
                                   alignment: Alignment.center,
-                                  child: Text(
+                                  child: const Text(
                                     '\u20B1500.00', // Use Unicode escape for Peso sign
                                     style: TextStyle(
                                       fontFamily: 'Poppins',
@@ -258,19 +267,19 @@ class _AccountScreenState extends State<AccountScreen> {
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 8.0),
+                              const SizedBox(width: 8.0),
                               Expanded(
                                 flex: 1,
                                 child: ElevatedButton(
                                   onPressed: () {},
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: Color(0xFF4285F4),
-                                    minimumSize: Size(0, 48),
+                                    backgroundColor: const Color(0xFF4285F4),
+                                    minimumSize: const Size(0, 48),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(8.0),
                                     ),
                                   ),
-                                  child: Text(
+                                  child: const Text(
                                     'CASH IN',
                                     style: TextStyle(
                                       fontFamily: 'BebasNeue',
@@ -284,7 +293,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                         ),
                         
-                        SizedBox(height: 16.0),
+                        const SizedBox(height: 16.0),
                         
                         // Vouchers section
                         _buildSectionContainer(
@@ -294,12 +303,12 @@ class _AccountScreenState extends State<AccountScreen> {
                             onPressed: () {},
                             style: ElevatedButton.styleFrom(
                               backgroundColor: BColors.primary,
-                              minimumSize: Size(double.infinity, 48),
+                              minimumSize: const Size(double.infinity, 48),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
                             ),
-                            child: Text(
+                            child: const Text(
                               '64 EXISTING VOUCHERS',
                               style: TextStyle(
                                 fontFamily: 'BebasNeue',
@@ -310,7 +319,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                         ),
                         
-                        SizedBox(height: 16.0),
+                        const SizedBox(height: 16.0),
                         
                         // Shop section
                         _buildSectionContainer(
@@ -319,10 +328,10 @@ class _AccountScreenState extends State<AccountScreen> {
                           content: Container(
                             height: 80,
                             decoration: BoxDecoration(
-                              color: Color(0xFF1A4B8F),
+                              color: const Color(0xFF1A4B8F),
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
                             child: Row(
                               children: [
                                 // Replace network image with an icon or local asset if available
@@ -332,7 +341,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                   color: Colors.grey[300],
                                   child: Icon(Icons.store, color: Colors.grey[600]),
                                 ),
-                                SizedBox(width: 16.0),
+                                const SizedBox(width: 16.0),
                                 Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,7 +356,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                       }
                                       return Text(
                                         username,
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontFamily: 'BebasNeue',
                                           color: Colors.white,
                                           fontWeight: FontWeight.bold,
@@ -372,7 +381,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                         ),
                         
-                        SizedBox(height: 16.0),
+                        const SizedBox(height: 16.0),
                       ],
                     ),
                   ),
@@ -403,7 +412,7 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           Expanded(
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(4.0),
                 border: Border.all(color: Colors.grey[300]!),
@@ -430,12 +439,12 @@ class _AccountScreenState extends State<AccountScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
             blurRadius: 10.0,
           ),
         ],
       ),
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start, // Align title to the left
         children: [
@@ -443,7 +452,7 @@ class _AccountScreenState extends State<AccountScreen> {
             children: [
               if (icon != null) ...[ // Conditionally display icon
                 Icon(icon, color: BColors.primary, size: 20.0),
-                SizedBox(width: 8.0),
+                const SizedBox(width: 8.0),
               ],
               Text(
                 title,
@@ -456,7 +465,7 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
             ],
           ),
-          SizedBox(height: 16.0),
+          const SizedBox(height: 16.0),
           content,
         ],
       ),

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:get/get.dart';
+import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
+import 'package:bytebazaar/common/widgets/b_feedback.dart';
 import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:mime/mime.dart';
 
 class EditProfileModal extends StatefulWidget {
   const EditProfileModal({super.key});
@@ -14,11 +19,17 @@ class EditProfileModal extends StatefulWidget {
 
 class _EditProfileModalState extends State<EditProfileModal> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+
+  bool _hasUnsavedChanges = false;
+  String? _originalName;
+  String? _originalUsername;
   
   User? _firebaseUser;
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
   bool _isEditing = false;
+  bool _savingPhoto = false;
   
   // Image picker
   final ImagePicker _picker = ImagePicker();
@@ -27,7 +38,20 @@ class _EditProfileModalState extends State<EditProfileModal> {
   @override
   void initState() {
     super.initState();
+    _nameController.addListener(_checkForUnsavedChanges);
+    _usernameController.addListener(_checkForUnsavedChanges);
     _fetchUserData();
+  }
+
+  void _checkForUnsavedChanges() {
+    final hasChanges =
+        (_originalName != null && _nameController.text != _originalName) ||
+        (_originalUsername != null && _usernameController.text != _originalUsername);
+    if (hasChanges != _hasUnsavedChanges) {
+      setState(() {
+        _hasUnsavedChanges = hasChanges;
+      });
+    }
   }
 
   Future<void> _fetchUserData() async {
@@ -45,7 +69,13 @@ class _EditProfileModalState extends State<EditProfileModal> {
         setState(() {
           _userData = doc.data();
           _nameController.text = _userData?['fullName'] ?? _firebaseUser?.displayName ?? '';
+          _usernameController.text = _userData?['username'] ?? '';
+          _originalName = _nameController.text;
+          _originalUsername = _usernameController.text;
           _isLoading = false;
+          _hasUnsavedChanges = false;
+          // Optionally force lowercase username for uniqueness
+          _usernameController.text = _usernameController.text.toLowerCase();
         });
       } else {
         setState(() {
@@ -70,14 +100,77 @@ class _EditProfileModalState extends State<EditProfileModal> {
       );
       
       if (pickedFile != null) {
-        setState(() {
-          _profileImageFile = File(pickedFile.path);
-        });
+        // Validate file type
+        final mimeType = lookupMimeType(pickedFile.path);
+        if (mimeType != null && !(mimeType == 'image/jpeg' || mimeType == 'image/png')) {
+          BFeedback.show(
+            context,
+            message: 'Only JPG and PNG images are allowed.',
+            type: BFeedbackType.error,
+            position: BFeedbackPosition.top,
+          );
+          return;
+        }
+        // Validate file size (max 5MB)
+        final file = File(pickedFile.path);
+        if (await file.length() > 5 * 1024 * 1024) {
+          BFeedback.show(
+            context,
+            message: 'Image size must be less than 5MB.',
+            type: BFeedbackType.error,
+            position: BFeedbackPosition.top,
+          );
+          return;
+        }
+        // Crop image
+        final cropped = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          aspectRatioPresets: [
+            CropAspectRatioPreset.square,
+          ],
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Crop Image',
+              toolbarColor: Color(0xFF4080FF),
+              toolbarWidgetColor: Colors.white,
+              lockAspectRatio: true,
+            ),
+            IOSUiSettings(
+              title: 'Crop Image',
+              aspectRatioLockEnabled: true,
+            ),
+          ],
+        );
+        if (cropped != null) {
+          print('Image picked: ' + pickedFile.path);
+          print('Image cropped: ' + cropped.path);
+          setState(() {
+            _profileImageFile = File(cropped.path);
+            _hasUnsavedChanges = true;
+          });
+          BFeedback.show(
+            context,
+            message: 'Profile photo selected!',
+            type: BFeedbackType.success,
+            position: BFeedbackPosition.top,
+          );
+        } else {
+          BFeedback.show(
+            context,
+            message: 'Image cropping cancelled or failed.',
+            type: BFeedbackType.error,
+            position: BFeedbackPosition.top,
+          );
+        }
       }
     } catch (e) {
       // Handle error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error selecting image: ${e.toString()}')),
+      print('Error selecting image: ${e.toString()}');
+      BFeedback.show(
+        context,
+        message: 'Error selecting image: ${e.toString()}',
+        type: BFeedbackType.error,
+        position: BFeedbackPosition.top,
       );
     }
   }
@@ -116,9 +209,33 @@ class _EditProfileModalState extends State<EditProfileModal> {
   Future<void> _updateProfile() async {
     try {
       if (_firebaseUser != null) {
+        // Check for username uniqueness
+        final username = _usernameController.text.trim();
+        if (username.isEmpty) {
+          BFeedback.show(
+            context,
+            message: 'Username cannot be empty',
+            type: BFeedbackType.error,
+          );
+          return;
+        }
+        final query = await FirebaseFirestore.instance
+            .collection('users')
+            .where('username', isEqualTo: username)
+            .get();
+        final duplicate = query.docs.any((doc) => doc.id != _firebaseUser!.uid);
+        if (duplicate) {
+          BFeedback.show(
+            context,
+            message: 'Username is already taken. Please choose another.',
+            type: BFeedbackType.error,
+          );
+          return;
+        }
         // Update database fields
         final updateData = {
           'fullName': _nameController.text,
+          'username': username,
         };
         
         // If we have a new profile image, upload it
@@ -126,6 +243,7 @@ class _EditProfileModalState extends State<EditProfileModal> {
           // Show loading state
           setState(() {
             _isLoading = true;
+            _savingPhoto = true;
           });
           
           // Upload image to Firebase Storage
@@ -148,12 +266,25 @@ class _EditProfileModalState extends State<EditProfileModal> {
         
         // Update Firestore
         await FirebaseFirestore.instance.collection('users').doc(_firebaseUser!.uid).update(updateData);
-        
-        // Update displayName in Firebase Auth
-        await _firebaseUser!.updateDisplayName(_nameController.text);
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully')),
+
+        // Refresh username everywhere
+        try {
+          final authController = Get.isRegistered<AuthController>()
+              ? Get.find<AuthController>()
+              : null;
+          await authController?.fetchAndSetUsername();
+        } catch (_) {}
+
+        setState(() {
+          _originalName = _nameController.text;
+          _originalUsername = _usernameController.text;
+          _hasUnsavedChanges = false;
+        });
+
+        BFeedback.show(
+          context,
+          message: 'Profile updated successfully!',
+          type: BFeedbackType.success,
         );
         
         setState(() {
@@ -167,15 +298,20 @@ class _EditProfileModalState extends State<EditProfileModal> {
         _isLoading = false;
       });
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating profile: ${e.toString()}')),
+      BFeedback.show(
+        context,
+        message: 'Error updating profile: ${e.toString()}',
+        type: BFeedbackType.error,
       );
     }
   }
 
   @override
   void dispose() {
+    _nameController.removeListener(_checkForUnsavedChanges);
+    _usernameController.removeListener(_checkForUnsavedChanges);
     _nameController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -285,6 +421,15 @@ class _EditProfileModalState extends State<EditProfileModal> {
                           : null,
                       ),
                     ),
+                    if (_savingPhoto)
+                      Positioned.fill(
+                        child: Container(
+                          color: Colors.black.withOpacity(0.4),
+                          child: const Center(
+                            child: CircularProgressIndicator(color: Color(0xFF4080FF)),
+                          ),
+                        ),
+                      ),
                     Positioned(
                       bottom: 5,
                       right: 5,
@@ -334,10 +479,10 @@ class _EditProfileModalState extends State<EditProfileModal> {
                       ),
                       const SizedBox(height: 8),
                       
-                      // Name field
+                      // Username field
                       _buildTextField(
-                        label: 'Full Name',
-                        controller: _nameController,
+                        label: 'Username',
+                        controller: _usernameController,
                         isEditing: _isEditing,
                         onEditPressed: () {
                           setState(() {
@@ -352,11 +497,29 @@ class _EditProfileModalState extends State<EditProfileModal> {
               
               const SizedBox(height: 16),
               
+              // Notice for unsaved changes
+              if (_hasUnsavedChanges)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.yellow[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.amber, width: 1),
+                  ),
+                  child: const Text(
+                    'You have unsaved changes. Please save all changes before closing.',
+                    style: TextStyle(
+                        color: Colors.black87, fontWeight: FontWeight.w500),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               // Save changes button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _updateProfile,
+                  onPressed: _hasUnsavedChanges ? _updateProfile : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4080FF),
                     foregroundColor: Colors.white,

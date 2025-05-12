@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bytebazaar/common/widgets/b_feedback.dart';
 
 class ChangePasswordModal extends StatefulWidget {
   const ChangePasswordModal({super.key});
@@ -12,11 +13,75 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
   final TextEditingController _currentPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+
+  bool _showPasswordMismatch = false;
   
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
-  
+  bool _loading = false;
+
+  double _passwordStrength = 0; // 0: weak, 1: strong
+  String _passwordStrengthLabel = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _newPasswordController.addListener(_updatePasswordStrength);
+    _confirmPasswordController.addListener(_validatePasswordMatch);
+    _newPasswordController.addListener(_validatePasswordMatch);
+  }
+
+  void _validatePasswordMatch() {
+    final newPassword = _newPasswordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+    bool mismatch = confirmPassword.isNotEmpty && newPassword != confirmPassword;
+    if (_showPasswordMismatch != mismatch) {
+      setState(() {
+        _showPasswordMismatch = mismatch;
+      });
+    }
+  }
+
+  void _updatePasswordStrength() {
+    final password = _newPasswordController.text;
+    double strength = 0;
+    String label = '';
+    if (password.isEmpty) {
+      strength = 0;
+      label = '';
+    } else if (password.length < 6) {
+      strength = 0.2;
+      label = 'Too short';
+    } else {
+      final hasLower = password.contains(RegExp(r'[a-z]'));
+      final hasUpper = password.contains(RegExp(r'[A-Z]'));
+      final hasDigit = password.contains(RegExp(r'[0-9]'));
+      final hasSpecial = password.contains(RegExp(r'[!@#\$&*~%^]'));
+      int score = [hasLower, hasUpper, hasDigit, hasSpecial].where((v) => v).length;
+      if (score <= 1) {
+        strength = 0.3;
+        label = 'Weak';
+      } else if (score == 2) {
+        strength = 0.5;
+        label = 'Fair';
+      } else if (score == 3) {
+        strength = 0.7;
+        label = 'Good';
+      } else if (score == 4 && password.length >= 8) {
+        strength = 1.0;
+        label = 'Strong';
+      } else {
+        strength = 0.7;
+        label = 'Good';
+      }
+    }
+    setState(() {
+      _passwordStrength = strength;
+      _passwordStrengthLabel = label;
+    });
+  }
+
   @override
   void dispose() {
     _currentPasswordController.dispose();
@@ -26,21 +91,31 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
   }
   
   Future<void> _changePassword() async {
+    if (_loading) return;
+    setState(() {
+      _loading = true;
+    });
     // Validation
     if (_currentPasswordController.text.isEmpty || 
         _newPasswordController.text.isEmpty || 
         _confirmPasswordController.text.isEmpty) {
       _showErrorMessage('All fields are required');
+      setState(() { _loading = false; });
       return;
     }
     
     if (_newPasswordController.text != _confirmPasswordController.text) {
+      setState(() { 
+        _showPasswordMismatch = true;
+        _loading = false; 
+      });
       _showErrorMessage('New passwords do not match');
       return;
     }
     
     if (_newPasswordController.text.length < 6) {
       _showErrorMessage('Password must be at least 6 characters');
+      setState(() { _loading = false; });
       return;
     }
     
@@ -62,15 +137,19 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
         await user.updatePassword(_newPasswordController.text);
         
         _showSuccessMessage('Password updated successfully');
-        
         // Clear the fields
         _currentPasswordController.clear();
         _newPasswordController.clear();
         _confirmPasswordController.clear();
+        setState(() { _loading = false; });
+        // Auto-close modal after short delay
+        Future.delayed(const Duration(milliseconds: 800), () {
+          if (mounted) Navigator.of(context).pop();
+        });
+        return;
       }
     } on FirebaseAuthException catch (e) {
       String message;
-      
       switch (e.code) {
         case 'wrong-password':
           message = 'Current password is incorrect';
@@ -81,28 +160,30 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
         default:
           message = 'An error occurred: ${e.message}';
       }
-      
       _showErrorMessage(message);
     } catch (e) {
       _showErrorMessage('An error occurred: ${e.toString()}');
     }
+    setState(() { _loading = false; });
   }
   
   void _showErrorMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
+    BFeedback.show(
+      context,
+      title: 'Error',
+      message: message,
+      type: BFeedbackType.error,
+      position: BFeedbackPosition.top,
     );
   }
   
   void _showSuccessMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
+    BFeedback.show(
+      context,
+      title: 'Success',
+      message: message,
+      type: BFeedbackType.success,
+      position: BFeedbackPosition.top,
     );
   }
 
@@ -216,6 +297,40 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
                       });
                     },
                   ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        LinearProgressIndicator(
+                          borderRadius: BorderRadius.circular(10),
+                          value: _passwordStrength,
+                          minHeight: 6,
+                          backgroundColor: Colors.grey[300],
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            _passwordStrength < 0.4
+                                ? Colors.red
+                                : _passwordStrength < 0.7
+                                    ? Colors.orange
+                                    : Colors.green,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          _passwordStrengthLabel,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _passwordStrength < 0.4
+                                ? Colors.red
+                                : _passwordStrength < 0.7
+                                    ? Colors.orange
+                                    : Colors.green,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   
                   // Confirm password field
@@ -229,6 +344,14 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
                       });
                     },
                   ),
+                  if (_showPasswordMismatch)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4, top: 2, bottom: 4),
+                      child: Text(
+                        'Passwords do not match',
+                        style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -240,7 +363,7 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _changePassword,
+              onPressed: _loading ? null : _changePassword,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4080FF),
                 foregroundColor: Colors.white,
@@ -249,12 +372,21 @@ class _ChangePasswordModalState extends State<ChangePasswordModal> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: const Text(
-                'SAVE CHANGES',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              child: _loading
+                  ? SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : const Text(
+                      'SAVE CHANGES',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
           ),
         ],
