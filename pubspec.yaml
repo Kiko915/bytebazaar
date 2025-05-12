@@ -59,6 +59,7 @@ flutter:
     - assets/images/onboarding/
     - assets/images/auth/
     - assets/images/products/
+    - assets/data/cpc.json
     - assets/lottie/
     - assets/images/payment/
     - assets/images/vectors/

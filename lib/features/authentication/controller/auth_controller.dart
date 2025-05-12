@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'dart:math';
 
@@ -11,8 +12,28 @@ class AuthController extends GetxController {
   Rxn<User> firebaseUser = Rxn<User>();
   RxBool isLoading = false.obs;
 
+  // --- Username for greeting ---
+  RxString currentUsername = ''.obs;
+
   // For demo: store OTP in memory (email -> otp)
   final Map<String, String> _otpStore = {};
+
+  Future<void> fetchAndSetUsername() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        // Prefer username, fallback to firstName, then email
+        currentUsername.value = data['username'] ?? data['firstName'] ?? user.email ?? 'User';
+      } else {
+        currentUsername.value = user.email ?? 'User';
+      }
+    } catch (e) {
+      currentUsername.value = user.email ?? 'User';
+    }
+  }
 
   // Check if user exists by email
   Future<bool> userExistsByEmail(String email) async {
@@ -71,6 +92,7 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     firebaseUser.bindStream(_auth.authStateChanges());
+    ever(firebaseUser, (_) => fetchAndSetUsername());
     super.onInit();
   }
 

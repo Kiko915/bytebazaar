@@ -177,7 +177,9 @@ class _AccountScreenState extends State<AccountScreen> {
                                         const SizedBox(height: 8.0),
                                         // Name and User ID
                                         Text(
-                                          _userData?['fullName'] ?? _firebaseUser?.displayName ?? 'No Name',
+                                          Get.find<AuthController>().currentUsername.value.isNotEmpty
+                                            ? Get.find<AuthController>().currentUsername.value
+                                            : (_userData?['fullName'] ?? _firebaseUser?.displayName ?? _firebaseUser?.email ?? 'No Name'),
                                           style: TextStyle(
                                             fontFamily: 'Poppins',
                                             color: BColors.primary,

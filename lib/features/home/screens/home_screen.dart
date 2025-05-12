@@ -9,6 +9,7 @@ import 'package:flutter/services.dart'; // Import for SystemUiOverlayStyle
 import 'package:iconsax/iconsax.dart';
 import 'package:get/get.dart';
 import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
+import 'package:bytebazaar/features/products/product_details.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -115,9 +116,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           _buildTimeBasedGreeting(context),
                           Obx(() {
-                            final user =
-                                Get.find<AuthController>().firebaseUser.value;
-                            String username = user?.displayName ?? 'User';
+                            final authController = Get.find<AuthController>();
+                            final username = authController.currentUsername.value.isNotEmpty
+                                ? authController.currentUsername.value
+                                : (authController.firebaseUser.value?.email ?? 'User');
                             return Text(
                               username,
                               style: Theme.of(context)
@@ -551,14 +553,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: itemCount,
                 itemBuilder: (context, index) {
                   final product = products[index % products.length];
-                  return ProductCardMinimal(
-                    imageUrl: 'assets/images/products/sample-product.png',
-                    title: product['title'] as String,
-                    price: product['price'] as String,
-                    discountedPrice: product['discountedPrice'] as String,
-                    rating: product['rating'] as double,
-                    badge: product['badge'] as String,
-                    onWishlist: () {},
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) => const ViewProduct(),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(1.0, 0.0);
+                            const end = Offset.zero;
+                            const curve = Curves.ease;
+                            final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                            return SlideTransition(position: animation.drive(tween), child: child);
+                          },
+                        ),
+                      );
+                    },
+                    child: ProductCardMinimal(
+                      imageUrl: 'assets/images/products/sample-product.png',
+                      title: product['title'] as String,
+                      price: product['price'] as String,
+                      discountedPrice: product['discountedPrice'] as String,
+                      rating: product['rating'] as double,
+                      badge: product['badge'] as String,
+                      onWishlist: () {},
+                    ),
                   );
                 },
               );

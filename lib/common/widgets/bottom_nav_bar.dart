@@ -1,4 +1,7 @@
 import 'package:bytebazaar/features/account/screens/account_screen.dart';
+import 'package:bytebazaar/utils/user_firestore_helper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bytebazaar/features/authentication/screens/signup/registration_screen.dart';
 import 'package:bytebazaar/features/cart/screens/cart_screen.dart';
 import 'package:bytebazaar/features/chat/screens/chat_screen.dart';
 import 'package:bytebazaar/features/home/screens/home_screen.dart'; // Import the actual HomeScreen
@@ -17,6 +20,25 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
+  @override
+  void initState() {
+    super.initState();
+    _checkRegistration();
+  }
+
+  void _checkRegistration() async {
+    final registered = await isUserRegistered();
+    if (!registered && mounted) {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => RegistrationScreen(email: user.email ?? '', displayName: user.displayName),
+          ),
+        );
+      }
+    }
+  }
   int _selectedIndex = 0;
 
   // List of Widgets to display based on the selected index

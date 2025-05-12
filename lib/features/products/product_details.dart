@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:bytebazaar/utils/constants/colors.dart';
 
 enum ActionType { buyNow, addToCart }
 
@@ -18,7 +19,8 @@ class _ViewProductState extends State<ViewProduct> {
   String _selectedColor = 'Grey';
   int _quantity = 1;
   final List<String> _colors = ['Grey', 'Blue', 'Green', 'Pink', 'Khaki', 'Black', 'Purple'];
-  
+  bool _isScrolled = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,173 +31,180 @@ class _ViewProductState extends State<ViewProduct> {
           SafeArea(
             child: Column(
               children: [
-                // Header with search bar and back button
-                _buildHeader(),
-                
                 // Scrollable content
                 Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Product image
-                        Container(
-                          height: 400,
-                          width: double.infinity,
-                          color: Colors.white,
-                          child: Stack(
-                            children: [
-                              Center(
-                                child: Image.asset(
-                                  'assets/images/tshirt.png',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      color: Colors.grey[200],
-                                      child: const Center(
-                                        child: Text('T-shirt Image'),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              // White gradient overlay
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.bottomCenter,
-                                    end: Alignment.center,
-                                    colors: [
-                                      Colors.white.withOpacity(0.7),
-                                      Colors.white.withOpacity(0.0),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        // Product details
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Title and price
-                              const Text(
-                                'UNIQLO TSHIRT',
-                                style: TextStyle(
-                                  color: Color(0xFF4080FF),
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                '₱ 500.00',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              
-                              // Location and rating
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                                  const SizedBox(width: 4),
-                                  const Text(
-                                    'LSPU Santa Cruz',
-                                    style: TextStyle(color: Colors.grey),
-                                  ),
-                                  const Spacer(),
-                                  _buildRatingStars(4.5),
-                                  const SizedBox(width: 4),
-                                  const Text(
-                                    '4.5',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Text(
-                                    '| 46.5k Orders',
-                                    style: TextStyle(color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                              
-                              // Seller info
-                              const SizedBox(height: 16),
-                              Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: Colors.blue,
-                                      radius: 20,
-                                      child: const Text(
-                                        'M',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: (scrollNotification) {
+                      if (scrollNotification.metrics.pixels > 0 && !_isScrolled) {
+                        setState(() => _isScrolled = true);
+                      } else if (scrollNotification.metrics.pixels <= 0 && _isScrolled) {
+                        setState(() => _isScrolled = false);
+                      }
+                      return false;
+                    },
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Product image
+                          Container(
+                            height: 400,
+                            width: double.infinity,
+                            color: Colors.transparent,
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Image.asset(
+                                    'assets/images/products/sample-product.png',
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: const Center(
+                                          child: Text('T-shirt Image'),
                                         ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    const Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Shop ni Marc',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                                // White gradient overlay
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.center,
+                                      colors: [
+                                        Colors.white.withOpacity(0.7),
+                                        Colors.white.withOpacity(0.0),
                                       ],
                                     ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          // Product details
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Title and price
+                                const Text(
+                                  'UNIQLO TSHIRT',
+                                  style: TextStyle(
+                                    color: Color(0xFF4080FF),
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  '₱ 500.00',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                
+                                // Location and rating
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_on, size: 16, color: Colors.grey),
+                                    const SizedBox(width: 4),
+                                    const Text(
+                                      'LSPU Santa Cruz',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
                                     const Spacer(),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        border: Border.all(color: Colors.blue),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: const Text(
-                                        'Online',
-                                        style: TextStyle(
-                                          color: Colors.blue,
-                                        ),
-                                      ),
+                                    _buildRatingStars(4.5),
+                                    const SizedBox(width: 4),
+                                    const Text(
+                                      '4.5',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Text(
+                                      '| 46.5k Orders',
+                                      style: TextStyle(color: Colors.grey),
                                     ),
                                   ],
                                 ),
-                              ),
-                              
-                              // Description
-                              const SizedBox(height: 16),
-                              const Text(
-                                'Lorem ipsum dolor sit amet. Sit nesciunt assumenda eos quis expedita aut sunt culpa. Qui alias eius est sint molestiae est sint error sed illo galisum. Eum voluptatem aliquid et delectus voluptates aut corporis atque id sunt maxime eos consequuntur inventore.',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                              const SizedBox(height: 16),
-                              const Text(
-                                'A quis dolorum eum reprehenderit temporibus quo nesciunt maxime quo voluptatem velit hic perferendis doloremque.',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                              
-                              const SizedBox(height: 80), // Space for bottom buttons
-                            ],
+                                
+                                // Seller info
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: Colors.blue,
+                                        radius: 20,
+                                        child: const Text(
+                                          'M',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Shop ni Marc',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const Spacer(),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: Colors.blue),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Text(
+                                          'Online',
+                                          style: TextStyle(
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                
+                                // Description
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Lorem ipsum dolor sit amet. Sit nesciunt assumenda eos quis expedita aut sunt culpa. Qui alias eius est sint molestiae est sint error sed illo galisum. Eum voluptatem aliquid et delectus voluptates aut corporis atque id sunt maxime eos consequuntur inventore.',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'A quis dolorum eum reprehenderit temporibus quo nesciunt maxime quo voluptatem velit hic perferendis doloremque.',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                
+                                const SizedBox(height: 80), // Space for bottom buttons
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -203,71 +212,109 @@ class _ViewProductState extends State<ViewProduct> {
             ),
           ),
           
+          // Sticky header overlay
+          Positioned(
+            top: 0, left: 0, right: 0,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              color: _isScrolled ? Colors.white : Colors.transparent,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), shape: BoxShape.circle),
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_back_ios, color: _isScrolled ? BColors.primary : Colors.black),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ),
+                      Spacer(),
+                      Container(
+                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), shape: BoxShape.circle),
+                        child: IconButton(
+                          icon: Icon(Icons.share, color: _isScrolled ? BColors.primary : Colors.black),
+                          onPressed: () {},
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), shape: BoxShape.circle),
+                        child: IconButton(
+                          icon: Icon(Icons.favorite_border, color: _isScrolled ? BColors.primary : Colors.black),
+                          onPressed: () {},
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          
           // Bottom action buttons
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.storefront_outlined),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.chat_outlined),
-                          onPressed: () {},
-                        ),
-                      ],
+            bottom: 0, left: 0, right: 0,
+            child: SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
                     ),
-                  ),
-                  Expanded(
-                    flex: 4,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF003D99),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                  ],
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(color: Colors.grey[200], shape: BoxShape.circle),
+                      child: IconButton(
+                        icon: Icon(Icons.chat_outlined, color: BColors.primary),
+                        onPressed: () {},
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _actionType = ActionType.buyNow;
-                        });
-                        _toggleVariationsPanel();
-                      },
-                      child: const Text('BUY NOW'),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    flex: 4,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4080FF),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
+                    const SizedBox(width: 8),
+                    const Spacer(),
+                    Expanded(
+                      flex: 2,
+                      child: OutlinedButton.icon(
+                        icon: Icon(Icons.add_shopping_cart, color: BColors.primary),
+                        label: const Text('ADD TO CART', style: TextStyle(color: BColors.primary)),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: BColors.primary),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
+                        onPressed: () {
+                          setState(() => _actionType = ActionType.addToCart);
+                          _toggleVariationsPanel();
+                        },
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _actionType = ActionType.addToCart;
-                        });
-                        _toggleVariationsPanel();
-                      },
-                      child: const Text('ADD TO CART'),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.shopping_bag, color: Colors.white),
+                        label: const Text('BUY NOW'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: BColors.primary,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: () {
+                          setState(() => _actionType = ActionType.buyNow);
+                          _toggleVariationsPanel();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -511,57 +558,6 @@ class _ViewProductState extends State<ViewProduct> {
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            child: Icon(
-              Icons.arrow_back_ios,
-              color: Colors.blue[700],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Container(
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.search, color: Colors.grey),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search',
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Icon(
-            Icons.chat_outlined,
-            color: Colors.blue[700],
           ),
         ],
       ),
