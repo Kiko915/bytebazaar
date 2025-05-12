@@ -202,7 +202,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       if (uid == null || uid.length < 10) return uid ?? '-';
       return '${uid.substring(0, 6)}...${uid.substring(uid.length - 4)}';
     }
-    final name = _userData?['fullName'] ?? _firebaseUser?.displayName ?? 'No Name';
+    final authController = Get.find<AuthController>();
+  final name = authController.currentUsername.value.isNotEmpty
+      ? authController.currentUsername.value
+      : (_userData?['fullName'] ?? _firebaseUser?.displayName ?? _firebaseUser?.email ?? 'No Name');
     final uid = shortUid(_firebaseUser?.uid);
     return Container(
       width: double.infinity,
