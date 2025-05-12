@@ -18,7 +18,6 @@ class AccountSettingsScreen extends StatefulWidget {
   _AccountSettingsScreenState createState() => _AccountSettingsScreenState();
 }
 
-
 class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   bool _darkMode = false;
 
@@ -41,7 +40,10 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         });
         return;
       }
-      final doc = await FirebaseFirestore.instance.collection('users').doc(_firebaseUser!.uid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(_firebaseUser!.uid)
+          .get();
       if (doc.exists) {
         setState(() {
           _userData = doc.data();
@@ -58,14 +60,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       });
     }
   }
-  
+
   // Track which sections are expanded - all set to false by default
   // Change the value depending on the backend condition
   bool _isPersonalDetailsExpanded = false;
   bool _isDisplayExpanded = false;
   bool _isPrivacySecurityExpanded = false;
   bool _isLinkedAccountsExpanded = false;
-  
+
   // Payment toggle states
   // Change the value depending on the backend condition
   bool _isPaypalConnected = false;
@@ -81,7 +83,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           children: [
             // Header with title and close button
             _buildHeader(),
-            
+
             // Main content
             Expanded(
               child: SingleChildScrollView(
@@ -91,9 +93,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     children: [
                       // Profile card
                       _buildProfileCard(),
-                      
+
                       SizedBox(height: 16),
-                      
+
                       // Settings sections
                       _buildSettingsSection(
                         title: 'Personal Details',
@@ -101,12 +103,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         isExpanded: _isPersonalDetailsExpanded,
                         onTap: () {
                           setState(() {
-                            _isPersonalDetailsExpanded = !_isPersonalDetailsExpanded;
+                            _isPersonalDetailsExpanded =
+                                !_isPersonalDetailsExpanded;
                           });
                         },
                         expandedContent: _buildPersonalDetailsContent(),
                       ),
-                      
+
                       _buildSettingsSection(
                         title: 'Display',
                         icon: Icons.visibility_outlined,
@@ -118,45 +121,80 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         },
                         expandedContent: _buildDisplayContent(),
                       ),
-                      
+
                       _buildSettingsSection(
                         title: 'Privacy and Security',
                         icon: Icons.lock_outline,
                         isExpanded: _isPrivacySecurityExpanded,
                         onTap: () {
                           setState(() {
-                            _isPrivacySecurityExpanded = !_isPrivacySecurityExpanded;
+                            _isPrivacySecurityExpanded =
+                                !_isPrivacySecurityExpanded;
                           });
                         },
                         expandedContent: _buildPrivacySecurityContent(),
                       ),
-                      
+
                       _buildSettingsSection(
                         title: 'Linked Accounts',
                         icon: Icons.link,
                         isExpanded: _isLinkedAccountsExpanded,
                         onTap: () {
                           setState(() {
-                            _isLinkedAccountsExpanded = !_isLinkedAccountsExpanded;
+                            _isLinkedAccountsExpanded =
+                                !_isLinkedAccountsExpanded;
                           });
                         },
                         expandedContent: _buildLinkedAccountsContent(),
                       ),
-                      
-                      _buildSettingsSection(
-                        title: 'Help Center',
-                        icon: Icons.help_outline,
-                        isExpanded: false,
-                        onTap: () {
-                          // Navigate to help center
-                        },
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12.0),
+                          onTap: () {
+                            // TODO: Implement navigation to Help Center screen
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12.0),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 8.0,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16.0, vertical: 18.0),
+                            child: Row(
+                              children: [
+                                Icon(Icons.help_outline,
+                                    color: Colors.grey, size: 20.0),
+                                const SizedBox(width: 12.0),
+                                Text(
+                                  'Help Center',
+                                  style: TextStyle(
+                                    fontSize: 16.0,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                Spacer(),
+                                Icon(Icons.arrow_forward_ios,
+                                    color: Colors.grey[400], size: 16.0),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                      
+
                       SizedBox(height: 16),
-                      
+
                       // Log out button
                       _buildLogoutButton(),
-                      
+
                       SizedBox(height: 20),
                     ],
                   ),
@@ -168,7 +206,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ),
     );
   }
-  
+
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -195,17 +233,14 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ),
     );
   }
-  
+
   Widget _buildProfileCard() {
-    // Helper to truncate UID
+    final authController = Get.find<AuthController>();
     String shortUid(String? uid) {
       if (uid == null || uid.length < 10) return uid ?? '-';
       return '${uid.substring(0, 6)}...${uid.substring(uid.length - 4)}';
     }
-    final authController = Get.find<AuthController>();
-  final name = authController.currentUsername.value.isNotEmpty
-      ? authController.currentUsername.value
-      : (_userData?['fullName'] ?? _firebaseUser?.displayName ?? _firebaseUser?.email ?? 'No Name');
+
     final uid = shortUid(_firebaseUser?.uid);
     return Container(
       width: double.infinity,
@@ -228,39 +263,42 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8.0,
-                  spreadRadius: 1.0,
-                  offset: Offset(0, 2),
-                ),
-              ],
             ),
             child: CircleAvatar(
               radius: 40.0,
-              backgroundColor: Colors.grey[300], // Placeholder background
-              backgroundImage: _userData?['photoURL'] != null || _firebaseUser?.photoURL != null
-                  ? NetworkImage(_userData?['photoURL'] ?? _firebaseUser!.photoURL!)
+              backgroundColor: Colors.grey[300],
+              backgroundImage: _userData?['photoURL'] != null ||
+                      _firebaseUser?.photoURL != null
+                  ? NetworkImage(
+                      _userData?['photoURL'] ?? _firebaseUser!.photoURL!)
                   : null,
-              child: _userData?['photoURL'] == null && _firebaseUser?.photoURL == null
+              child: _userData?['photoURL'] == null &&
+                      _firebaseUser?.photoURL == null
                   ? Icon(
                       Icons.person,
-                      size: 50.0, // Adjust size as needed
+                      size: 50.0,
                       color: Colors.grey[600],
                     )
                   : null,
             ),
           ),
           SizedBox(height: 12.0),
-          Text(
-            name,
-            style: TextStyle(
-              color: Color(0xFF4285F4),
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Obx(() {
+            final username = authController.currentUsername.value;
+            return Text(
+              username.isNotEmpty
+                  ? username
+                  : (_userData?['fullName'] ??
+                      _firebaseUser?.displayName ??
+                      _firebaseUser?.email ??
+                      'No Name'),
+              style: TextStyle(
+                color: Color(0xFF4285F4),
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+              ),
+            );
+          }),
           Text(
             'User ID: $uid',
             style: TextStyle(
@@ -272,7 +310,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ),
     );
   }
-  
+
   Widget _buildSettingsSection({
     required String title,
     required IconData icon,
@@ -329,7 +367,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               ),
             ),
           ),
-          
+
           // Animated expanded content
           ClipRect(
             child: AnimatedSize(
@@ -338,11 +376,11 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               child: SizedBox(
                 height: isExpanded ? null : 0,
                 child: expandedContent != null
-                  ? Padding(
-                      padding: EdgeInsets.only(bottom: 8.0),
-                      child: expandedContent,
-                    )
-                  : const SizedBox(),
+                    ? Padding(
+                        padding: EdgeInsets.only(bottom: 8.0),
+                        child: expandedContent,
+                      )
+                    : const SizedBox(),
               ),
             ),
           ),
@@ -350,7 +388,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ),
     );
   }
-  
+
   Widget _buildPersonalDetailsContent() {
     return Column(
       children: [
@@ -358,8 +396,21 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         _buildPersonalDetailItem(
           icon: Icons.edit_outlined,
           title: 'Edit my profile',
-          onTap: () {
-            showEditProfileModal(context);
+          onTap: () async {
+            final result = await showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => DraggableScrollableSheet(
+                initialChildSize: 0.9,
+                minChildSize: 0.5,
+                maxChildSize: 0.95,
+                builder: (_, controller) => const EditProfileModal(),
+              ),
+            );
+            if (result == true) {
+              _fetchUserData();
+            }
           },
         ),
         Divider(height: 1, thickness: 1, color: Colors.grey[200]),
@@ -373,7 +424,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ],
     );
   }
-  
+
   Widget _buildDisplayContent() {
     return Column(
       children: [
@@ -390,22 +441,39 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                     size: 18.0,
                   ),
                   SizedBox(width: 12.0),
-                  Text(
-                    'Dark Mode',
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      color: Colors.grey[700],
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'Dark Mode',
+                        style: TextStyle(
+                          fontSize: 14.0,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                      SizedBox(width: 8.0),
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Color(0xFFFFE082),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Coming Soon',
+                          style: TextStyle(
+                            color: Color(0xFF8D6E63),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
               CupertinoSwitch(
                 value: _darkMode,
-                onChanged: (value) {
-                  setState(() {
-                    _darkMode = value;
-                  });
-                },
+                onChanged: null, // Disabled
                 activeTrackColor: Color(0xFF4285F4),
               ),
             ],
@@ -414,7 +482,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ],
     );
   }
-  
+
   Widget _buildPrivacySecurityContent() {
     return Column(
       children: [
@@ -435,7 +503,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ],
     );
   }
-  
+
   Widget _buildLinkedAccountsContent() {
     // Use loading or fallback if user data is not ready
     String paypal = _userData?['paypalAccount'] ?? 'Not linked';
@@ -479,7 +547,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ],
     );
   }
-  
+
   Widget _buildIndentedItem({required Widget child}) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -491,7 +559,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ),
     );
   }
-  
+
   Widget _buildPersonalDetailItem({
     required IconData icon,
     required String title,
@@ -522,7 +590,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ),
     );
   }
-  
+
   Widget _buildPaymentAccountItem({
     required String logo,
     required String accountNumber,
@@ -538,11 +606,12 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
           SizedBox(
             width: 48,
             height: 30,
-            child: logo == 'paypal' 
+            child: logo == 'paypal'
                 ? SvgPicture.asset('assets/images/payment/paypal_logo.svg')
-                : logo == 'stripe' 
+                : logo == 'stripe'
                     ? SvgPicture.asset('assets/images/payment/stripe_logo.svg')
-                    : SvgPicture.asset('assets/images/payment/razorpay_logo.svg'),
+                    : SvgPicture.asset(
+                        'assets/images/payment/razorpay_logo.svg'),
           ),
           SizedBox(width: 12.0),
           Text(
@@ -562,7 +631,7 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
       ),
     );
   }
-  
+
   Widget _buildLogoutButton() {
     return SizedBox(
       width: double.infinity,
@@ -571,10 +640,16 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
         onPressed: () async {
           final error = await AuthController.to.signOut();
           if (error == null) {
-            BFeedback.show(context, title: 'Logged Out', message: 'You have been logged out.', type: BFeedbackType.success);
+            BFeedback.show(context,
+                title: 'Logged Out',
+                message: 'You have been logged out.',
+                type: BFeedbackType.success);
             Get.offAll(() => const LoginScreen());
           } else {
-            BFeedback.show(context, title: 'Logout Failed', message: error ?? 'Unknown error', type: BFeedbackType.error);
+            BFeedback.show(context,
+                title: 'Logout Failed',
+                message: error ?? 'Unknown error',
+                type: BFeedbackType.error);
           }
         },
         style: ElevatedButton.styleFrom(
