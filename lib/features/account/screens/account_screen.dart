@@ -1,5 +1,6 @@
 import 'package:bytebazaar/features/account/screens/account_settings.dart';
 import 'package:bytebazaar/features/account/screens/seller_registration.dart';
+import 'package:bytebazaar/features/account/screens/seller_status_screen.dart';
 import 'package:bytebazaar/utils/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -21,10 +22,17 @@ class _AccountScreenState extends State<AccountScreen> {
   bool _isLoading = true;
   String? _error;
 
+  // Seller application status
+  String? _sellerStatus; // 'pending', 'approved', 'rejected', or null
+  String? _sellerRejectionReason;
+  bool _isLoadingSellerStatus = true;
+  bool _dashboardVisited = false; // This can be persisted if needed
+
   @override
   void initState() {
     super.initState();
     _fetchUserData();
+    _fetchSellerStatus();
   }
 
   Future<void> _fetchUserData() async {
@@ -53,6 +61,38 @@ class _AccountScreenState extends State<AccountScreen> {
       setState(() {
         _isLoading = false;
         _error = e.toString();
+      });
+    }
+  }
+
+  Future<void> _fetchSellerStatus() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        setState(() {
+          _sellerStatus = null;
+          _isLoadingSellerStatus = false;
+        });
+        return;
+      }
+      final doc = await FirebaseFirestore.instance.collection('seller_applications').doc(user.uid).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        setState(() {
+          _sellerStatus = data['status'] ?? 'pending';
+          _sellerRejectionReason = data['rejectionReason'];
+          _isLoadingSellerStatus = false;
+        });
+      } else {
+        setState(() {
+          _sellerStatus = null;
+          _isLoadingSellerStatus = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _sellerStatus = null;
+        _isLoadingSellerStatus = false;
       });
     }
   }
@@ -213,30 +253,12 @@ class _AccountScreenState extends State<AccountScreen> {
                                         const SizedBox(height: 16.0),
                               
                                         const SizedBox(height: 8.0),
-                                        // Manage account button
-                                        ElevatedButton(
-                                          onPressed: () => Navigator.push( // Navigate to SellerRegistrationScreen
-                                            context,
-                                            MaterialPageRoute(builder: (context) => const SellerRegistrationScreen()),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: BColors.primary,
-                                            minimumSize: const Size(double.infinity, 48),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8.0),
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'BECOME A SELLER',
-                                            style: TextStyle(
-                                              fontFamily: 'BebasNeue',
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                         // Seller application status button logic
+                                         _isLoadingSellerStatus
+                                             ? const Center(child: CircularProgressIndicator())
+                                             : _buildSellerButton(context),
+                                       ],
+                                     ),
                         ),
                         
                         const SizedBox(height: 16.0),
@@ -392,6 +414,196 @@ class _AccountScreenState extends State<AccountScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildSellerButton(BuildContext context) {
+    Color redColor = Colors.red;
+    if (_sellerStatus == null) {
+      // No application yet
+      return ElevatedButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SellerRegistrationScreen()),
+        ).then((_) => _fetchSellerStatus()),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: BColors.primary,
+          minimumSize: const Size(double.infinity, 48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+        ),
+        child: const Text(
+          'BECOME A SELLER',
+          style: TextStyle(
+            fontFamily: 'BebasNeue',
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+    if (_sellerStatus == 'pending') {
+      return ElevatedButton.icon(
+        icon: const Icon(Icons.hourglass_top, color: Colors.white),
+        label: const Text(
+          'TRACK APPLICATION',
+          style: TextStyle(
+            fontFamily: 'BebasNeue',
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.orange,
+          minimumSize: const Size(double.infinity, 48),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+        ),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SellerStatusScreen(status: 'pending'),
+            ),
+          );
+        },
+      );
+    }
+    if (_sellerStatus == 'approved') {
+      if (_dashboardVisited) {
+        // Show Seller Dashboard button
+        return ElevatedButton.icon(
+          icon: const Icon(Icons.dashboard, color: Colors.white),
+          label: const Text(
+            'SELLER DASHBOARD',
+            style: TextStyle(
+              fontFamily: 'BebasNeue',
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            minimumSize: const Size(double.infinity, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+          ),
+          onPressed: () {
+            // TODO: Navigate to seller dashboard
+          },
+        );
+      } else {
+        // Show See Results button
+        return ElevatedButton.icon(
+          icon: Icon(Icons.check_circle, color: redColor),
+          label: const Text(
+            'SEE RESULTS',
+            style: TextStyle(
+              fontFamily: 'BebasNeue',
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            minimumSize: const Size(double.infinity, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+          ),
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SellerStatusScreen(
+                  status: 'approved',
+                  onGoToDashboard: () {
+                    setState(() {
+                      _dashboardVisited = true;
+                    });
+                  },
+                ),
+              ),
+            );
+            setState(() {});
+          },
+        );
+      }
+    }
+    if (_sellerStatus == 'rejected') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ElevatedButton.icon(
+            icon: Icon(Icons.cancel, color: redColor),
+            label: const Text(
+              'SEE RESULTS',
+              style: TextStyle(
+                fontFamily: 'BebasNeue',
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SellerStatusScreen(
+                    status: 'rejected',
+                    rejectionReason: _sellerRejectionReason,
+                    onReapply: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SellerRegistrationScreen(),
+                        ),
+                      ).then((_) => _fetchSellerStatus());
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 8.0),
+          OutlinedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SellerRegistrationScreen(),
+                ),
+              ).then((_) => _fetchSellerStatus());
+            },
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: redColor),
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+            ),
+            child: const Text(
+              'RE-APPLY',
+              style: TextStyle(
+                fontFamily: 'BebasNeue',
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+    // Fallback
+    return const SizedBox.shrink();
   }
 
   Widget _buildUserInfoRow(String label, String value) {

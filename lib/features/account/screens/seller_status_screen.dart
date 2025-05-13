@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:confetti/confetti.dart';
 
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,6 +29,7 @@ class _SellerStatusScreenState extends State<SellerStatusScreen> {
   String? _rejectionReason;
   bool _loading = true;
   StreamSubscription<DocumentSnapshot>? _statusSubscription;
+  late ConfettiController _confettiController;
 
   @override
   void initState() {
@@ -35,6 +37,7 @@ class _SellerStatusScreenState extends State<SellerStatusScreen> {
     _status = widget.status;
     _rejectionReason = widget.rejectionReason;
     _listenToStatus();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 2));
   }
 
   void _listenToStatus() {
@@ -67,6 +70,7 @@ class _SellerStatusScreenState extends State<SellerStatusScreen> {
   @override
   void dispose() {
     _statusSubscription?.cancel();
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -133,7 +137,10 @@ class _SellerStatusScreenState extends State<SellerStatusScreen> {
             ),
             SizedBox(height: 24),
             ElevatedButton(
-              onPressed: widget.onReapply,
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (widget.onReapply != null) widget.onReapply!();
+              },
               child: Text('Re-apply as Seller'),
             ),
           ],
@@ -141,25 +148,52 @@ class _SellerStatusScreenState extends State<SellerStatusScreen> {
         break;
       case 'approved':
         lottieAsset = 'assets/lottie/sa-approved.json';
-        content = Column(
-          mainAxisSize: MainAxisSize.min,
+        // Start confetti when approved
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _confettiController.play(); // Safe to call repeatedly; play() will restart if already running
+        });
+        content = Stack(
+          alignment: Alignment.center,
           children: [
-            Lottie.asset(lottieAsset, height: 180),
-            SizedBox(height: 24),
-            Text(
-              'Congratulations!',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.green),
-              textAlign: TextAlign.center,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Lottie.asset(lottieAsset, height: 180),
+                SizedBox(height: 24),
+                Text(
+                  'Congratulations!',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.green),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Your seller application has been approved. You can now access your seller dashboard.',
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: widget.onGoToDashboard,
+                  child: Text('Go to Seller Dashboard'),
+                ),
+              ],
             ),
-            SizedBox(height: 12),
-            Text(
-              'Your seller application has been approved. You can now access your seller dashboard.',
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: widget.onGoToDashboard,
-              child: Text('Go to Seller Dashboard'),
+            // Confetti overlay
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConfettiWidget(
+                    confettiController: _confettiController,
+                    blastDirectionality: BlastDirectionality.explosive,
+                    shouldLoop: false,
+                    numberOfParticles: 30,
+                    maxBlastForce: 20,
+                    minBlastForce: 5,
+                    emissionFrequency: 0.05,
+                    gravity: 0.2,
+                  ),
+                ),
+              ),
             ),
           ],
         );

@@ -152,11 +152,9 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
         _isSubmitting = false;
       });
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => SellerStatusScreen(status: 'pending'),
-          ),
-          (route) => false,
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Application submitted! Track your status on your account page.')),
         );
       }
     } catch (e) {
@@ -227,80 +225,13 @@ class _SellerRegistrationScreenState extends State<SellerRegistrationScreen> {
     );
   }
 
-  StreamSubscription<DocumentSnapshot>? _statusSubscription;
-
   @override
   void initState() {
     super.initState();
-    _listenToSellerStatus();
-  }
-
-  void _listenToSellerStatus() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      setState(() => _isCheckingStatus = false);
-      return;
-    }
-    _statusSubscription = FirebaseFirestore.instance
-        .collection('seller_applications')
-        .doc(user.uid)
-        .snapshots()
-        .listen((doc) {
-      if (!doc.exists || doc.data() == null) {
-        setState(() => _isCheckingStatus = false);
-        return;
-      }
-      final data = doc.data()!;
-      final status = data['status'] ?? 'pending';
-      setState(() => _isCheckingStatus = false);
-      if (status == 'pending') {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => SellerStatusScreen(status: 'pending'),
-            ),
-          );
-        });
-      } else if (status == 'rejected') {
-        final reason = data['rejectionReason'] ?? '';
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => SellerStatusScreen(
-                status: 'rejected',
-                rejectionReason: reason,
-                onReapply: () {
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (_) => SellerRegistrationScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-          );
-        });
-      } else if (status == 'approved') {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (_) => SellerStatusScreen(
-                status: 'approved',
-                onGoToDashboard: () {
-                  // TODO: navigate to seller dashboard
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          );
-        });
-      }
-    });
   }
 
   @override
   void dispose() {
-    _statusSubscription?.cancel();
     _businessNameController.dispose();
     _businessDescriptionController.dispose();
     _businessReasonController.dispose();
