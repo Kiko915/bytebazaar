@@ -633,6 +633,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                                     _zipController.text.trim(),
                                                 'createdAt': FieldValue
                                                     .serverTimestamp(),
+                                                'role': 'user',
                                               });
                                               BFeedback.show(context,
                                                   title: 'Success',
