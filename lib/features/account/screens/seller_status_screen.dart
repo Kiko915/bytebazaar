@@ -5,6 +5,7 @@ import 'package:confetti/confetti.dart';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bytebazaar/features/account/screens/seller_dashboard_screen.dart';
 
 class SellerStatusScreen extends StatefulWidget {
   final String status; // initial status: 'pending', 'approved', 'rejected'
@@ -157,27 +158,45 @@ class _SellerStatusScreenState extends State<SellerStatusScreen> {
           children: [
             Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Lottie.asset(lottieAsset, height: 180),
                 SizedBox(height: 24),
                 Text(
                   'Congratulations!',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.green),
-                  textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'Your seller application has been approved. You can now access your seller dashboard.',
+                  'Your seller application has been approved!',
+                  style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
+                SizedBox(height: 34),
+                // Add more approved content here if you want
                 SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: widget.onGoToDashboard,
-                  child: Text('Go to Seller Dashboard'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: ElevatedButton.icon(
+                    icon: Icon(Icons.dashboard, color: Colors.white),
+                    label: Text('Go to Seller Dashboard'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      minimumSize: const Size(double.infinity, 48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const SellerDashboardScreen()),
+                      );
+                      if (widget.onGoToDashboard != null) widget.onGoToDashboard!();
+                    },
+                  ),
                 ),
               ],
             ),
-            // Confetti overlay
             Positioned.fill(
               child: IgnorePointer(
                 child: Align(

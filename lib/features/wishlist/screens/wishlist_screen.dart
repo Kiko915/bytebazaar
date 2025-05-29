@@ -7,15 +7,16 @@ import 'package:flutter/material.dart';
 
 import 'package:lottie/lottie.dart';
 import 'package:bytebazaar/common/widgets/b_feedback.dart';
-
+import 'package:bytebazaar/features/wishlist/wishlist_repository.dart';
+import 'package:bytebazaar/features/products/wishlist_service.dart';
+import 'package:bytebazaar/features/products/product_details.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 class WishlistScreen extends StatelessWidget {
   const WishlistScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final dark = BHelperFunctions.isDarkMode(context);
-    // Placeholder for wishlist items logic. Assume empty for now.
-    final bool isEmpty = true;
 
     return Scaffold(
       appBar: null,
@@ -49,12 +50,12 @@ class WishlistScreen extends StatelessWidget {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () {
-                        // TODO: Implement remove all wishlist items
+                      onTap: () async {
+                        await WishlistService.clearWishlist();
                         BFeedback.show(
                           context,
                           title: 'Wishlist Cleared',
-                          message: 'All wishlist items removed (placeholder).',
+                          message: 'All wishlist items removed.',
                           type: BFeedbackType.info,
                         );
                       },
@@ -64,15 +65,21 @@ class WishlistScreen extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: isEmpty
-                    ? Center(
+                child: StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: WishlistRepository.wishlistStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final items = snapshot.data ?? [];
+                    if (items.isEmpty) {
+                      return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Display Lottie animation when wishlist is empty
                             Lottie.asset(
-                              BImages.notFoundAnimation, // Path as positional argument
-                              width: BHelperFunctions.screenWidth() * 0.6, // Re-add width as named argument
+                              BImages.notFoundAnimation,
+                              width: BHelperFunctions.screenWidth() * 0.6,
                             ),
                             const SizedBox(height: BSizes.spaceBtwItems),
                             Text(
@@ -81,16 +88,182 @@ class WishlistScreen extends StatelessWidget {
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: BSizes.spaceBtwSections),
-                            // Optional: Add a button to browse products
-                            // ElevatedButton(
-                            //   onPressed: () { /* Navigate to shop */ },
-                            //   child: const Text(BTexts.browseProducts),
                           ],
                         ),
-                      )
-                    : const Center(
-                        child: Text("Wishlist Items Here"), // Placeholder for actual list
-                      ),
+                      );
+                    }
+                    return ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+                      itemCount: items.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (context, i) {
+                        final product = items[i];
+                        final shopId = product['shopId'];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ViewProduct(
+                                  productId: product['id'],
+                                  productData: product,
+                                ),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(18),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.07),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Product Image
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: product['images'] != null && (product['images'] as List).isNotEmpty
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: Image.network(
+                                            (product['images'] as List)[0],
+                                            width: 80,
+                                            height: 80,
+                                            fit: BoxFit.cover,
+                                          ),
+                                        )
+                                      : Container(
+                                          width: 80,
+                                          height: 80,
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey[200],
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: const Icon(Icons.image, size: 40, color: Colors.grey),
+                                        ),
+                                ),
+                                // Product Details
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Text(
+                                                product['name'] ?? '-',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18,
+                                                  color: Color(0xFF222B45),
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            StatefulBuilder(
+                                              builder: (context, setHeartState) {
+                                                return IconButton(
+                                                  icon: const Icon(Icons.favorite, color: Colors.red, size: 22),
+                                                  splashRadius: 20,
+                                                  tooltip: 'Remove from wishlist',
+                                                  onPressed: () async {
+                                                    await WishlistService.removeFromWishlist(product['id']);
+                                                    BFeedback.show(
+                                                      context,
+                                                      title: 'Removed from Wishlist',
+                                                      message: 'Product has been removed from your wishlist.',
+                                                      type: BFeedbackType.info,
+                                                    );
+                                                  },
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          product['price'] != null ? '₱ ${product['price'].toString()}' : '-',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 16,
+                                            color: Color(0xFF4080FF),
+                                          ),
+                                        ),
+                                        FutureBuilder<DocumentSnapshot>(
+                                          future: shopId != null ? FirebaseFirestore.instance.collection('shops').doc(shopId).get() : null,
+                                          builder: (context, shopSnap) {
+                                            if (shopSnap.connectionState == ConnectionState.waiting) {
+                                              return const SizedBox(height: 18, child: LinearProgressIndicator(minHeight: 2));
+                                            }
+                                            if (!shopSnap.hasData || shopSnap.data == null || !shopSnap.data!.exists) {
+                                              return const SizedBox.shrink();
+                                            }
+                                            final shopData = shopSnap.data!.data() as Map<String, dynamic>?;
+                                            if (shopData == null) return const SizedBox.shrink();
+                                            return Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                if ((shopData['name'] ?? '').toString().isNotEmpty)
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(top: 4.0),
+                                                    child: Row(
+                                                      children: [
+                                                        const Icon(Icons.store, size: 15, color: Colors.blueAccent),
+                                                        const SizedBox(width: 4),
+                                                        Flexible(
+                                                          child: Text(
+                                                            shopData['name'],
+                                                            style: const TextStyle(fontSize: 14, color: Colors.blueAccent, fontWeight: FontWeight.w500),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                if ((shopData['city'] ?? '').toString().isNotEmpty || (shopData['province'] ?? '').toString().isNotEmpty)
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(top: 2.0),
+                                                    child: Row(
+                                                      children: [
+                                                        const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                                                        const SizedBox(width: 3),
+                                                        Flexible(
+                                                          child: Text(
+                                                            ((shopData['city'] ?? '-') + ', ' + (shopData['province'] ?? '-')),
+                                                            style: const TextStyle(fontSize: 13, color: Colors.grey),
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ],
           ),

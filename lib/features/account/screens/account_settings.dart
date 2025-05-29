@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:bytebazaar/features/authentication/screens/login/login_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:bytebazaar/features/account/screens/help_center_screen.dart';
 
 class AccountSettingsScreen extends StatefulWidget {
   const AccountSettingsScreen({super.key});
@@ -153,10 +154,15 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12.0),
                           onTap: () {
-                            // TODO: Implement navigation to Help Center screen
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const HelpCenterScreen(),
+                              ),
+                            );
                           },
                           child: Container(
-                            decoration: BoxDecoration(
+                            decoration:  BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12.0),
                               boxShadow: [

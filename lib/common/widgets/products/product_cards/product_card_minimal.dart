@@ -8,8 +8,8 @@ class ProductCardMinimal extends StatelessWidget {
   final String price;
   final String discountedPrice;
   final double rating;
-  final String? badge;
-  final VoidCallback? onWishlist;
+  final bool isWishlisted;
+  final VoidCallback onWishlistToggle;
 
   const ProductCardMinimal({
     super.key,
@@ -18,8 +18,8 @@ class ProductCardMinimal extends StatelessWidget {
     required this.price,
     required this.discountedPrice,
     required this.rating,
-    this.badge,
-    this.onWishlist,
+    required this.isWishlisted,
+    required this.onWishlistToggle,
   });
 
   @override
@@ -52,35 +52,32 @@ class ProductCardMinimal extends StatelessWidget {
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: Image.asset(
-                      imageUrl,
-                      width: constraints.maxWidth,
-                      height: 120,
-                      fit: BoxFit.cover,
-                    ),
+                    child: (imageUrl.startsWith('http') || imageUrl.startsWith('https'))
+                        ? Image.network(
+                            imageUrl,
+                            width: constraints.maxWidth,
+                            height: 120,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 64),
+                          )
+                        : Image.asset(
+                            imageUrl,
+                            width: constraints.maxWidth,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          ),
                   ),
-                  if (badge != null)
-                    Positioned(
-                      top: 6,
-                      left: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: BColors.primary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          badge!,
-                          style: theme.textTheme.labelSmall?.copyWith(color: Colors.white, fontSize: 10 * textScale),
-                        ),
-                      ),
-                    ),
+
                   Positioned(
                     top: 2,
                     right: 2,
                     child: IconButton(
-                      icon: const Icon(Iconsax.heart5, size: 18, color: BColors.grey),
-                      onPressed: onWishlist,
+                      icon: Icon(
+                        Iconsax.heart5,
+                        size: 18,
+                        color: isWishlisted ? Colors.red : BColors.grey,
+                      ),
+                      onPressed: onWishlistToggle,
                       splashRadius: 18,
                       padding: EdgeInsets.zero,
                     ),
@@ -106,10 +103,11 @@ class ProductCardMinimal extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        price,
+                        (price.startsWith('\u20B1') || price.startsWith('₱')) ? price : '\u20B1$price',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: BColors.primary,
                           fontWeight: FontWeight.bold,
+                          fontFamily: 'Roboto',
                         ),
                         textScaleFactor: textScale,
                       ),
