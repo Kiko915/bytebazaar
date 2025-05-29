@@ -47,7 +47,7 @@ class MyAppLauncher extends StatelessWidget {
       future: getInitialScreen(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const MaterialApp(home: Scaffold(body: Center(child: CircularProgressIndicator())));
+          return const MaterialApp(debugShowCheckedModeBanner: false, home: Scaffold(body: Center(child: CircularProgressIndicator())));
         }
         return App(initialScreen: snapshot.data ?? const LoginScreen());
       },

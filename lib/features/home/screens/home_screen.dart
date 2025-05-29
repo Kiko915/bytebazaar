@@ -1,15 +1,21 @@
 import 'package:bytebazaar/common/widgets/custom_shapes/curved_edges/curved_edges_clipper.dart'; // Import the clipper
 import 'package:bytebazaar/common/widgets/products/product_cards/product_card_vertical.dart';
 import 'package:bytebazaar/common/widgets/products/product_cards/product_card_minimal.dart';
+import 'package:bytebazaar/features/products/wishlist_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bytebazaar/common/widgets/products/product_cards/product_card_descriptive.dart';
 import 'package:bytebazaar/utils/constants/colors.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:bytebazaar/utils/constants/sizes.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:bytebazaar/features/home/screens/categories_screen.dart';
 import 'package:flutter/services.dart'; // Import for SystemUiOverlayStyle
 import 'package:iconsax/iconsax.dart';
 import 'package:get/get.dart';
 import 'package:bytebazaar/features/authentication/controller/auth_controller.dart';
 import 'package:bytebazaar/features/products/product_details.dart';
+import 'package:bytebazaar/features/products/search_results_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +26,27 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final FocusNode _searchFocusNode = FocusNode();
+  List<String> wishlistIds = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWishlist();
+  }
+
+  Future<void> _loadWishlist() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('wishlist')
+          .get();
+      setState(() {
+        wishlistIds = snapshot.docs.map((doc) => doc.id).toList();
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -261,7 +288,16 @@ class _HomeScreenState extends State<HomeScreen> {
           _searchFocusNode.requestFocus();
         },
         onSubmitted: (value) {
-          // Handle search submit
+          if (value.trim().isNotEmpty) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => SearchResultsScreen(
+                  searchTerm: value.trim(),
+                  category: null, // Can be wired to a filter later
+                ),
+              ),
+            );
+          }
         },
       ),
     );
@@ -343,41 +379,69 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPromoBanner() {
-    // Placeholder for the banner - Replace with actual implementation
-    return Container(
-      height: 200, // Keep height or make dynamic
-      decoration: BoxDecoration(
-        // Use a gradient or image based on the design
-        color: Colors.pink.shade100, // Example color
-        borderRadius:
-            BorderRadius.circular(BSizes.borderRadiusLg), // Use BSizes
+    return SizedBox(
+      height: 200,
+      child: CarouselSlider(
+        options: CarouselOptions(
+          autoPlay: true,
+          aspectRatio: 16 / 9,
+          viewportFraction: 0.8,
+          enlargeCenterPage: true,
+        ),
+        items: [
+          Image.asset('assets/images/home/bb_1.png', fit: BoxFit.fill, width: 1920, height: 1080),
+          Image.asset('assets/images/home/bb_2.png', fit: BoxFit.fill, width: 1920, height: 1080),
+          Image.asset('assets/images/home/bb_3.png', fit: BoxFit.fill, width: 1920, height: 1080),
+        ],
       ),
-      child: const Center(
-          child: Text('Promo Banner Placeholder')), // Add actual content
     );
   }
 
   Widget _buildCategoriesSection(BuildContext context) {
-    // Placeholder for categories - Replace with actual implementation
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader(
-            context, 'Categories'), // Correctly call _buildSectionHeader here
-        const SizedBox(height: BSizes.spaceBtwItems), // Use BSizes
+          context,
+          'Categories',
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const CategoriesScreen(),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: BSizes.spaceBtwItems),
         SizedBox(
-          height: 85, // Adjust height based on content + padding
+          height: 85,
           child: Stack(
             children: [
-              ListView.separated(
-                itemCount: 8, // Example count
-                scrollDirection: Axis.horizontal,
-                separatorBuilder: (_, __) =>
-                    const SizedBox(width: BSizes.spaceBtwItems), // Use BSizes
-                itemBuilder: (context, index) =>
-                    _buildCategoryItem(context, index), // Use actual item builder
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('categories')
+                    .where('parent', isEqualTo: "")
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(child: Text('No categories found'));
+                  }
+                  final categories = snapshot.data!.docs;
+                  return ListView.separated(
+                    itemCount: categories.length,
+                    scrollDirection: Axis.horizontal,
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(width: BSizes.spaceBtwItems),
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return _buildCategoryItem(context, category);
+                    },
+                  );
+                },
               ),
-              // Right-side gradient overlay
               Positioned(
                 right: 0,
                 top: 0,
@@ -434,53 +498,49 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryItem(BuildContext context, int index) {
-    // Placeholder icons and text - ideally fetch from data source
-    final icons = [
-      Iconsax.watch, Iconsax.bag, Iconsax.magicpen,
-      Iconsax.tag, // Replaced shirt with tag
-      Iconsax.category, Iconsax.category, Iconsax.bezier,
-      Iconsax.menu // Replaced boot with category
-    ];
-    final labels = [
-      'Watches',
-      'Bags',
-      'Beauty',
-      'Clothing',
-      'Accessories',
-      'Shoes',
-      'Lifestyle',
-      'More'
-    ];
-
-    return Column(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          padding: const EdgeInsets.all(BSizes.sm), // Use BSizes
-          decoration: BoxDecoration(
+  Widget _buildCategoryItem(BuildContext context, QueryDocumentSnapshot category) {
+    final name = category['name'] ?? 'Category';
+    final iconData = Iconsax.category; // Optionally map category to icon
+    return InkWell(
+      borderRadius: BorderRadius.circular(100),
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SearchResultsScreen(
+              searchTerm: '',
+              category: name,
+            ),
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            padding: const EdgeInsets.all(BSizes.sm),
+            decoration: BoxDecoration(
               color: BColors.white,
-              borderRadius: BorderRadius.circular(100), // Circular background
-              border: Border.all(
-                  color: BColors.lightGrey.withAlpha((0.5 * 255).toInt()))),
-          child: Center(
-            child: Icon(icons[index],
-                color: BColors.primary, size: BSizes.iconLg), // Use BSizes
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(color: BColors.lightGrey.withAlpha((0.5 * 255).toInt())),
+            ),
+            child: Center(
+              child: Icon(iconData, color: BColors.primary, size: BSizes.iconLg),
+            ),
           ),
-        ),
-        const SizedBox(height: BSizes.spaceBtwItems / 2), // Use BSizes
-        SizedBox(
-          width: 60, // Ensure text doesn't overflow too much
-          child: Text(
-            labels[index],
-            style: Theme.of(context).textTheme.labelMedium,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          const SizedBox(height: BSizes.spaceBtwItems / 2),
+          SizedBox(
+            width: 60,
+            child: Text(
+              name,
+              style: Theme.of(context).textTheme.labelMedium,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -491,96 +551,93 @@ class _HomeScreenState extends State<HomeScreen> {
         _buildSectionHeader(context, 'Recommended', onPressed: () {
           // Handle "See more" action
         }),
-        // Calculate dynamic height for the grid
-        Builder(
-          builder: (context) {
-            final products = [
-              {
-                'title': 'Classic Wrist Watch',
-                'price': 'PHP 1,299',
-                'discountedPrice': '₱1,499',
-                'rating': 4.8,
-                'badge': 'Discount',
-              },
-              {
-                'title': 'Leather Handbag',
-                'price': 'PHP 799',
-                'discountedPrice': '',
-                'rating': 4.6,
-                'badge': 'New',
-              },
-              {
-                'title': 'Modern Table Lamp',
-                'price': 'PHP 2,099',
-                'discountedPrice': '₱2,499',
-                'rating': 4.9,
-                'badge': 'Lowest Price',
-              },
-              {
-                'title': 'Wireless Headphones Marshall',
-                'price': 'PHP 1,599',
-                'discountedPrice': '',
-                'rating': 4.3,
-                'badge': 'Free Shipping',
-              },
-              {
-                'title': 'Eco Water Bottle',
-                'price': 'PHP 999',
-                'discountedPrice': '₱1,099',
-                'rating': 4.7,
-                'badge': 'Discount',
-              },
-            ];
+        StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance.collection('products').orderBy('updatedAt', descending: true).limit(10).snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return const Center(child: Text('No products found'));
+            }
+            final products = snapshot.data!.docs;
             int itemCount = products.length;
             int crossAxisCount = 2;
             double cardHeight = 220;
             double mainAxisSpacing = 12;
             int rowCount = (itemCount / crossAxisCount).ceil();
-            double gridHeight = (cardHeight * rowCount) + (mainAxisSpacing * (rowCount - 1)) + 12; // +12 for top padding
+            double gridHeight = (cardHeight * rowCount) + (mainAxisSpacing * (rowCount - 1)) + 12;
             final double gridWidth = MediaQuery.of(context).size.width - 2 * BSizes.defaultSpace;
             final double tileWidth = (gridWidth - (crossAxisCount - 1) * mainAxisSpacing) / crossAxisCount;
             final double childAspectRatio = tileWidth / cardHeight;
             return GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(top: 12),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  mainAxisSpacing: mainAxisSpacing,
-                  crossAxisSpacing: mainAxisSpacing,
-                  childAspectRatio: childAspectRatio,
-                ),
-                itemCount: itemCount,
-                itemBuilder: (context, index) {
-                  final product = products[index % products.length];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation, secondaryAnimation) => const ViewProduct(),
-                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                            const begin = Offset(1.0, 0.0);
-                            const end = Offset.zero;
-                            const curve = Curves.ease;
-                            final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                            return SlideTransition(position: animation.drive(tween), child: child);
-                          },
-                        ),
-                      );
-                    },
-                    child: ProductCardMinimal(
-                      imageUrl: 'assets/images/products/sample-product.png',
-                      title: product['title'] as String,
-                      price: product['price'] as String,
-                      discountedPrice: product['discountedPrice'] as String,
-                      rating: product['rating'] as double,
-                      badge: product['badge'] as String,
-                      onWishlist: () {},
-                    ),
-                  );
-                },
-              );
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(top: 12),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: mainAxisSpacing,
+                crossAxisSpacing: mainAxisSpacing,
+                childAspectRatio: childAspectRatio,
+              ),
+              itemCount: itemCount,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                final data = product.data() as Map<String, dynamic>;
+                final images = data['images'] as List?;
+                final imageUrl = (images != null && images.isNotEmpty) ? images[0] : 'assets/images/products/sample-product.png';
+                final title = data['name'] ?? '';
+                final price = data['variations'] != null && data['variations'] is List && data['variations'].isNotEmpty
+                    ? '₱${data['variations'][0]['price']?.toString() ?? ''}'
+                    : '';
+                final discountedPrice = '';
+                final rating = (data['rating'] ?? 0).toDouble();
+                return StatefulBuilder(
+                  builder: (context, setState) {
+                    bool isWishlisted = wishlistIds.contains(product.id);
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => ViewProduct(
+                              productId: product.id,
+                              productData: data,
+                            ),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.ease;
+                              final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              return SlideTransition(position: animation.drive(tween), child: child);
+                            },
+                          ),
+                        );
+                      },
+                      child: ProductCardMinimal(
+                        imageUrl: imageUrl,
+                        title: title,
+                        price: price,
+                        discountedPrice: discountedPrice,
+                        rating: rating,
+                        isWishlisted: isWishlisted,
+                        onWishlistToggle: () async {
+                          if (isWishlisted) {
+                            await WishlistService.removeFromWishlist(product.id);
+                          } else {
+                            await WishlistService.addToWishlist(product.id, data);
+                          }
+                          await _loadWishlist(); // Refresh wishlistIds for all cards
+                          setState(() {
+                            isWishlisted = !isWishlisted;
+                          });
+                        },
+                      ),
+                    );
+                  },
+                );
+              },
+            );
           },
         ),
       ],
@@ -588,44 +645,4 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 // Removed _buildProductCardPlaceholder as it's replaced by BProductCardVertical
-} // Add missing closing brace for HomeScreen class
-
-// Sticky blue search/filter row widget for sliver
-class _StickyBlueSearchFilterDelegate extends SliverPersistentHeaderDelegate {
-  final double _minExtent;
-  final double _maxExtent;
-  final Color backgroundColor;
-  final Widget Function(BuildContext context, bool pinned) builder;
-  _StickyBlueSearchFilterDelegate({
-    required this.builder,
-    required double minExtent,
-    required double maxExtent,
-    required this.backgroundColor,
-  })  : _minExtent = minExtent,
-        _maxExtent = maxExtent;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final bool pinned = shrinkOffset > 0.0;
-    return Container(
-      color: pinned ? backgroundColor : Colors.transparent,
-      padding: EdgeInsets.only(
-        top: pinned ? MediaQuery.of(context).padding.top + 8 : 8,
-        left: 0,
-        right: 0,
-        bottom: 8,
-      ),
-      child: builder(context, pinned),
-    );
-  }
-
-  @override
-  double get minExtent => _minExtent;
-  @override
-  double get maxExtent => _maxExtent;
-
-  @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
-      true;
 }

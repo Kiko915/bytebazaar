@@ -1,15 +1,16 @@
 import 'package:bytebazaar/features/account/screens/account_screen.dart';
-import 'package:bytebazaar/utils/user_firestore_helper.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:bytebazaar/features/authentication/screens/signup/registration_screen.dart';
 import 'package:bytebazaar/features/cart/screens/cart_screen.dart';
 import 'package:bytebazaar/features/chat/screens/chat_screen.dart';
-import 'package:bytebazaar/features/home/screens/home_screen.dart'; // Import the actual HomeScreen
-import 'package:bytebazaar/features/wishlist/screens/wishlist_screen.dart'; // Import WishlistScreen
+import 'package:bytebazaar/features/home/screens/home_screen.dart';
+import 'package:bytebazaar/features/wishlist/screens/wishlist_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:bytebazaar/utils/user_firestore_helper.dart';
 import '../../utils/constants/colors.dart';
-import '../../utils/constants/sizes.dart'; // Import sizes for padding/height
+import '../../utils/constants/sizes.dart';
 import '../../utils/helpers/helper_functions.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -18,6 +19,7 @@ class BottomNavBar extends StatefulWidget {
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
 }
+
 
 class _BottomNavBarState extends State<BottomNavBar> {
   @override
@@ -109,12 +111,15 @@ class _BottomNavBarState extends State<BottomNavBar> {
             // Adjust height slightly to give icons more vertical space if needed
             // height: 60, // Example height adjustment
             elevation: 0, // Remove default elevation since Container provides shadow
-            items: const <BottomNavigationBarItem>[
-              BottomNavigationBarItem(icon: Icon(Iconsax.home), label: 'Home'),
-              BottomNavigationBarItem(icon: Icon(Iconsax.heart), label: 'Wishlist'),
-              BottomNavigationBarItem(icon: Icon(Iconsax.shopping_bag), label: 'Cart'),
-              BottomNavigationBarItem(icon: Icon(Iconsax.message), label: 'Chat'),
-              BottomNavigationBarItem(icon: Icon(Iconsax.user), label: 'Me'),
+            items: <BottomNavigationBarItem>[
+              const BottomNavigationBarItem(icon: Icon(Iconsax.home), label: 'Home'),
+              const BottomNavigationBarItem(icon: Icon(Iconsax.heart), label: 'Wishlist'),
+              BottomNavigationBarItem(
+                icon: _CartIconWithBadge(),
+                label: 'Cart',
+              ),
+              const BottomNavigationBarItem(icon: Icon(Iconsax.message), label: 'Chat'),
+              const BottomNavigationBarItem(icon: Icon(Iconsax.user), label: 'Me'),
             ],
             currentIndex: _selectedIndex,
             selectedItemColor: BColors.primary,
@@ -129,3 +134,61 @@ class _BottomNavBarState extends State<BottomNavBar> {
     );
   }
 }
+
+class _CartIconWithBadge extends StatelessWidget {
+  const _CartIconWithBadge({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return const Icon(Iconsax.shopping_bag);
+    }
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('cart')
+          .snapshots(),
+      builder: (context, snapshot) {
+        int count = 0;
+        if (snapshot.hasData) {
+          count = snapshot.data!.docs.length;
+        }
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            const Icon(Iconsax.shopping_bag),
+            if (count > 0)
+              Positioned(
+                right: -6,
+                top: -3,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white, width: 1),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
